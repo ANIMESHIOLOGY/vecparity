@@ -1,0 +1,111 @@
+[build-system]
+requires = ["hatchling"]
+build-backend = "hatchling.build"
+
+[project]
+name = "vecparity"
+version = "0.1.0"
+description = "Live, quality-verified migration between vector databases — proves retrieval quality survived the switch before you cut over."
+authors = [{ name = "Animesh" }]
+license = { file = "LICENSE" }
+readme = "README.md"
+requires-python = ">=3.9"
+keywords = ["vector-database", "migration", "rag", "pgvector", "qdrant", "pinecone", "embeddings", "retrieval"]
+classifiers = [
+    "Development Status :: 3 - Alpha",
+    "Intended Audience :: Developers",
+    "Intended Audience :: Science/Research",
+    "License :: OSI Approved :: MIT License",
+    "Programming Language :: Python :: 3",
+    "Programming Language :: Python :: 3.9",
+    "Programming Language :: Python :: 3.10",
+    "Programming Language :: Python :: 3.11",
+    "Programming Language :: Python :: 3.12",
+    "Topic :: Database",
+    "Topic :: Scientific/Engineering :: Artificial Intelligence",
+]
+dependencies = [
+    "numpy>=1.24.0",
+    "pydantic>=2.0.0",
+    "typer>=0.12.0",
+    "rich>=13.0.0",
+]
+
+[project.optional-dependencies]
+pgvector = ["psycopg[binary]>=3.1.0", "pgvector>=0.2.0"]
+qdrant = ["qdrant-client>=1.9.0"]
+pinecone = ["pinecone>=5.0.0"]
+dev = [
+    "pytest>=7.0.0",
+    "pytest-asyncio>=0.21.0",
+    "pytest-cov>=4.0.0",
+    "ruff>=0.4.0",
+    "black>=24.0.0",
+    "mypy>=1.8.0",
+    "pre-commit>=3.0.0",
+]
+all = [
+    "vecparity[pgvector,qdrant,pinecone]",
+]
+
+[project.scripts]
+vecparity = "vecparity.cli:app"
+
+[project.urls]
+Homepage = "https://github.com/ANIMESHIOLOGY/vecparity"
+Repository = "https://github.com/ANIMESHIOLOGY/vecparity"
+"Bug Tracker" = "https://github.com/ANIMESHIOLOGY/vecparity/issues"
+
+[tool.hatch.build.targets.wheel]
+packages = ["vecparity"]
+
+[tool.ruff]
+line-length = 100
+target-version = "py39"
+
+[tool.ruff.lint]
+select = ["E", "F", "I", "UP", "B"]
+ignore = ["E501"]
+
+[tool.ruff.lint.per-file-ignores]
+"tests/**" = ["ANN", "E501"]
+# Calling typer.Option(...) as an argument default is the required Typer
+# pattern, not the mutable-default-argument footgun B008 warns about.
+"vecparity/cli.py" = ["B008"]
+
+[tool.black]
+line-length = 100
+target-version = ["py39", "py310", "py311"]
+
+[tool.mypy]
+# Not 3.9/3.10: the installed numpy's stubs use 3.12 `type` statement
+# syntax mypy insists on parsing at the declared target version. This
+# governs mypy's own syntax checking only — it doesn't change vecparity's
+# actual supported-runtime floor (still Python 3.9, per requires-python).
+python_version = "3.12"
+plugins = ["pydantic.mypy"]
+strict = true
+ignore_missing_imports = true
+exclude = ["tests/", "build/", "dist/"]
+# NOT no_site_packages=true: that blocks mypy from resolving *any*
+# installed package (including pydantic itself), which silently degrades
+# BaseModel to `Any` and defeats every pydantic-aware check below it.
+
+[[tool.mypy.overrides]]
+# Typer's @app.command() decorator has no type stubs strict mode is happy
+# with — this is a known Typer/mypy interop gap, not a real typing hole.
+module = "vecparity.cli"
+disallow_untyped_decorators = false
+
+[tool.pytest.ini_options]
+asyncio_mode = "auto"
+testpaths = ["tests"]
+markers = [
+    "slow: marks tests as slow (deselect with '-m not slow')",
+    "integration: marks tests as integration tests (require docker)",
+]
+addopts = "--cov=vecparity --cov-report=term-missing"
+
+[tool.coverage.run]
+source = ["vecparity"]
+omit = ["tests/*"]
