@@ -9,7 +9,13 @@ description = "Live, quality-verified migration between vector databases — pro
 authors = [{ name = "Animesh" }]
 license = { file = "LICENSE" }
 readme = "README.md"
-requires-python = ">=3.9"
+# Not 3.9: PEP 604 `X | None` unions (used throughout, including in
+# pydantic models and Typer CLI option types — both resolve annotations
+# at runtime, not just for static type-checkers) need real interpreter
+# support for the `|` operator on types, which only exists from 3.10 on.
+# Python 3.9 also reached end-of-life 2025-10-31, so there's no reason to
+# contort the codebase (or add the eval_type_backport shim) to support it.
+requires-python = ">=3.10"
 keywords = ["vector-database", "migration", "rag", "pgvector", "qdrant", "pinecone", "embeddings", "retrieval"]
 classifiers = [
     "Development Status :: 3 - Alpha",
@@ -17,10 +23,10 @@ classifiers = [
     "Intended Audience :: Science/Research",
     "License :: OSI Approved :: MIT License",
     "Programming Language :: Python :: 3",
-    "Programming Language :: Python :: 3.9",
     "Programming Language :: Python :: 3.10",
     "Programming Language :: Python :: 3.11",
     "Programming Language :: Python :: 3.12",
+    "Programming Language :: Python :: 3.13",
     "Topic :: Database",
     "Topic :: Scientific/Engineering :: Artificial Intelligence",
 ]
@@ -61,7 +67,7 @@ packages = ["vecparity"]
 
 [tool.ruff]
 line-length = 100
-target-version = "py39"
+target-version = "py310"
 
 [tool.ruff.lint]
 select = ["E", "F", "I", "UP", "B"]
@@ -75,13 +81,13 @@ ignore = ["E501"]
 
 [tool.black]
 line-length = 100
-target-version = ["py39", "py310", "py311"]
+target-version = ["py310", "py311", "py312"]
 
 [tool.mypy]
-# Not 3.9/3.10: the installed numpy's stubs use 3.12 `type` statement
-# syntax mypy insists on parsing at the declared target version. This
-# governs mypy's own syntax checking only — it doesn't change vecparity's
-# actual supported-runtime floor (still Python 3.9, per requires-python).
+# Higher than the requires-python floor (3.10): the installed numpy's
+# stubs use 3.12 `type` statement syntax mypy insists on parsing at the
+# declared target version. This governs mypy's own syntax checking only —
+# it doesn't change vecparity's actual supported-runtime floor.
 python_version = "3.12"
 plugins = ["pydantic.mypy"]
 strict = true

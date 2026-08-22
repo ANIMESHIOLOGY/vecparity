@@ -1,5 +1,26 @@
 # Changelog
 
+## Unreleased
+
+- **Breaking:** dropped Python 3.9 support, floor raised to 3.10. PEP 604
+  `X | None` union syntax is used throughout, including in pydantic models
+  and Typer CLI option types — both resolve annotations at *runtime*, not
+  just for static type-checkers, and that requires real interpreter
+  support for `|` on types (3.10+). Python 3.9 also reached end-of-life
+  on 2025-10-31. Caught by CI's Python 3.9 matrix job, which failed on
+  `TypeError: unsupported operand type(s) for |: 'type' and 'NoneType'`
+  during pydantic model collection.
+- Fixed a real bug in `PineconeAdapter.list_changed_since`: `index.list()`
+  yields paginated `ListResponse` objects, each holding a batch of
+  `ListItem(id=...)` entries — not bare id strings. The previous code
+  would have broken the downstream `fetch()` call against any real
+  Pinecone index; never caught locally since Pinecone has no docker-based
+  integration test target the way pgvector/Qdrant do.
+- Fixed a mypy-only issue in `cli.py`: the Qdrant and Pinecone branches of
+  `_load_adapter()` reused one variable name for two different client
+  types, which mypy flags even though the branches are mutually
+  exclusive at runtime.
+
 ## v0.1.0 — Initial release
 
 - Core types (`VectorRecord`, `ScoredMatch`, `QueryCase`)
