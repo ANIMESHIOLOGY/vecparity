@@ -1,0 +1,35 @@
+/* Brand colors sampled directly from logo/vecparity_logo.png. */
+
+:root {
+  --md-primary-fg-color: #005bfd;
+  --md-primary-fg-color--light: #3378ff;
+  --md-primary-fg-color--dark: #0047cc;
+  --md-accent-fg-color: #8000d6;
+  --md-accent-fg-color--transparent: #8000d61a;
+}
+
+[data-md-color-scheme="slate"] {
+  --md-primary-fg-color: #3378ff;
+  --md-accent-fg-color: #a855f7;
+  --md-accent-fg-color--transparent: #a855f71a;
+  --md-default-bg-color: #0a0a12;
+  --md-default-bg-color--light: #0a0a12cc;
+  --md-default-bg-color--lighter: #0a0a1299;
+  --md-default-bg-color--lightest: #0a0a1212;
+  --md-default-fg-color--lightest: #0a0a1212;
+}
+
+/* Thin brand gradient under the header, echoing the logo's blue-to-purple. */
+.md-header {
+  box-shadow: none;
+  border-bottom: 3px solid transparent;
+  border-image: linear-gradient(90deg, #005bfd, #8000d6) 1;
+}
+
+[data-md-color-scheme="slate"] .md-header {
+  border-image: linear-gradient(90deg, #3378ff, #a855f7) 1;
+}
+
+.md-tabs {
+  border-bottom: none;
+}
