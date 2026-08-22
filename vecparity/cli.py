@@ -60,11 +60,16 @@ def _load_adapter(spec: str) -> VectorDBAdapter:
 
         from vecparity.adapters.qdrant import QdrantAdapter
 
-        client = QdrantClient(
+        # Separate variable names per branch (qdrant_client, pinecone_client,
+        # below) rather than reusing `client`: mypy infers one type for a
+        # name from its first assignment in the function and flags any
+        # later branch that assigns it a different client type, even though
+        # only one branch ever actually executes.
+        qdrant_client = QdrantClient(
             url=os.environ.get("QDRANT_URL", "http://localhost:6333"),
             api_key=os.environ.get("QDRANT_API_KEY"),
         )
-        return QdrantAdapter(client=client, collection=name)
+        return QdrantAdapter(client=qdrant_client, collection=name)
     if backend == "pgvector":
         import os
 
@@ -81,9 +86,9 @@ def _load_adapter(spec: str) -> VectorDBAdapter:
 
         from vecparity.adapters.pinecone import PineconeAdapter
 
-        client = Pinecone(api_key=os.environ["PINECONE_API_KEY"])
+        pinecone_client = Pinecone(api_key=os.environ["PINECONE_API_KEY"])
         namespace = os.environ.get("PINECONE_NAMESPACE", "")
-        return PineconeAdapter(client=client, index_name=name, namespace=namespace)
+        return PineconeAdapter(client=pinecone_client, index_name=name, namespace=namespace)
     raise typer.BadParameter(f"unknown backend {backend!r} in {spec!r}")
 
 

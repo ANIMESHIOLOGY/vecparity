@@ -62,12 +62,20 @@ class PineconeAdapter(VectorDBAdapter):
         self.index.delete(ids=ids, namespace=self.namespace)
 
     def list_changed_since(self, cursor: float | None) -> Iterator[VectorRecord]:
+        # index.list() yields ListResponse pages, each holding a batch of
+        # ListItem(id=...) entries — not bare id strings. (Confirmed against
+        # the installed pinecone-client; this used to append the page
+        # object itself into id_batch, which would have broken the
+        # downstream fetch() call on any real Pinecone index.)
         id_batch: list[str] = []
-        for id in self.index.list(namespace=self.namespace):
-            id_batch.append(id)
-            if len(id_batch) >= self.fetch_batch_size:
-                yield from self._fetch_and_filter(id_batch, cursor)
-                id_batch = []
+        for page in self.index.list(namespace=self.namespace):
+            for item in page.vectors:
+                if item.id is None:
+                    continue
+                id_batch.append(item.id)
+                if len(id_batch) >= self.fetch_batch_size:
+                    yield from self._fetch_and_filter(id_batch, cursor)
+                    id_batch = []
         if id_batch:
             yield from self._fetch_and_filter(id_batch, cursor)
 
