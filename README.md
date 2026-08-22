@@ -1,3 +1,7 @@
+<p align="center">
+  <img src="logo/vecparity_logo.png" alt="VecParity logo" width="320">
+</p>
+
 # VecParity
 
 > Live, quality-verified migration between vector databases.

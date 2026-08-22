@@ -6,6 +6,8 @@ edit_uri: edit/main/docs/
 
 theme:
   name: material
+  logo: assets/vecparity_logo.png
+  favicon: assets/vecparity_logo.png
   palette:
     - scheme: default
       primary: indigo
