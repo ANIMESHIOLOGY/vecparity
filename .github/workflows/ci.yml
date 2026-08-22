@@ -81,7 +81,22 @@ jobs:
         run: pip install -e ".[all,dev]"
 
       - name: Start test backends
-        run: docker compose -f docker-compose.test.yml up -d --wait
+        # Retries on a transient Docker networking race seen on shared
+        # runners: "failed to bind host port ... address already in use"
+        # for a port nothing else in this job actually uses — a
+        # docker-proxy port-binding flake, not a real conflict (every
+        # other service in the same `up` call started fine). A clean
+        # `down -v` + retry clears it.
+        run: |
+          for attempt in 1 2 3; do
+            if docker compose -f docker-compose.test.yml up -d --wait; then
+              exit 0
+            fi
+            echo "Attempt $attempt failed, retrying after cleanup..."
+            docker compose -f docker-compose.test.yml down -v
+            sleep 5
+          done
+          exit 1
 
       - name: Run integration tests
         run: pytest tests/integration/ -v -m integration
