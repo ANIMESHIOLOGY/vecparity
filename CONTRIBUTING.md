@@ -24,8 +24,8 @@ pytest tests/ -m "not integration" --ignore=tests/integration
 # With coverage
 pytest tests/ --cov=vecparity -m "not integration" --ignore=tests/integration
 
-# Integration tests — need real pgvector + Qdrant instances.
-# docker-compose.test.yml spins up both.
+# Integration tests — need real backend instances (pgvector, Qdrant,
+# Milvus, Weaviate, Chroma). docker-compose.test.yml spins up all five.
 docker compose -f docker-compose.test.yml up -d
 pytest tests/integration/ -m integration
 docker compose -f docker-compose.test.yml down -v

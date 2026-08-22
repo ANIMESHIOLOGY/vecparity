@@ -89,6 +89,40 @@ def _load_adapter(spec: str) -> VectorDBAdapter:
         pinecone_client = Pinecone(api_key=os.environ["PINECONE_API_KEY"])
         namespace = os.environ.get("PINECONE_NAMESPACE", "")
         return PineconeAdapter(client=pinecone_client, index_name=name, namespace=namespace)
+    if backend == "milvus":
+        import os
+
+        from pymilvus import MilvusClient
+
+        from vecparity.adapters.milvus import MilvusAdapter
+
+        milvus_client = MilvusClient(uri=os.environ.get("MILVUS_URI", "http://localhost:19530"))
+        return MilvusAdapter(client=milvus_client, collection_name=name)
+    if backend == "weaviate":
+        import os
+
+        import weaviate
+
+        from vecparity.adapters.weaviate import WeaviateAdapter
+
+        weaviate_client = weaviate.connect_to_local(
+            host=os.environ.get("WEAVIATE_HOST", "localhost"),
+            port=int(os.environ.get("WEAVIATE_PORT", "8080")),
+            grpc_port=int(os.environ.get("WEAVIATE_GRPC_PORT", "50051")),
+        )
+        return WeaviateAdapter(collection=weaviate_client.collections.get(name))
+    if backend == "chroma":
+        import os
+
+        import chromadb
+
+        from vecparity.adapters.chroma import ChromaAdapter
+
+        chroma_client = chromadb.HttpClient(
+            host=os.environ.get("CHROMA_HOST", "localhost"),
+            port=int(os.environ.get("CHROMA_PORT", "8000")),
+        )
+        return ChromaAdapter(collection=chroma_client.get_or_create_collection(name))
     raise typer.BadParameter(f"unknown backend {backend!r} in {spec!r}")
 
 

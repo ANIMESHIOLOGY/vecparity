@@ -62,26 +62,14 @@ jobs:
           fail_ci_if_error: false
 
   integration:
-    name: Integration Tests (pgvector + Qdrant)
+    name: Integration Tests (all backends)
     runs-on: ubuntu-latest
-    services:
-      pgvector:
-        image: pgvector/pgvector:pg16
-        env:
-          POSTGRES_PASSWORD: postgres
-          POSTGRES_DB: vecparity_test
-        ports:
-          - 55432:5432
-        options: >-
-          --health-cmd "pg_isready -U postgres"
-          --health-interval 5s
-          --health-timeout 5s
-          --health-retries 10
-      qdrant:
-        image: qdrant/qdrant:latest
-        ports:
-          - 56333:6333
-
+    # Milvus needs etcd + minio started first, in that dependency order,
+    # which GitHub Actions' native `services:` block can't express (it
+    # starts every service in parallel with no depends_on support). Using
+    # docker-compose.test.yml directly here also means there's exactly one
+    # place — not two divergent YAML definitions — describing how to stand
+    # up the test backends, same file contributors use locally.
     steps:
       - uses: actions/checkout@v4
 
@@ -90,17 +78,23 @@ jobs:
           python-version: "3.11"
 
       - name: Install dependencies
-        run: pip install -e ".[pgvector,qdrant,dev]"
+        run: pip install -e ".[all,dev]"
 
-      - name: Wait for Qdrant
-        run: |
-          for i in $(seq 1 20); do
-            curl -sf http://localhost:56333/readyz && break
-            sleep 2
-          done
+      - name: Start test backends
+        run: docker compose -f docker-compose.test.yml up -d --wait
 
       - name: Run integration tests
         run: pytest tests/integration/ -v -m integration
         env:
           VECPARITY_TEST_PGVECTOR_DSN: postgresql://postgres:postgres@localhost:55432/vecparity_test
           VECPARITY_TEST_QDRANT_URL: http://localhost:56333
+          VECPARITY_TEST_WEAVIATE_HOST: localhost
+          VECPARITY_TEST_WEAVIATE_PORT: "58080"
+          VECPARITY_TEST_WEAVIATE_GRPC_PORT: "58051"
+          VECPARITY_TEST_CHROMA_HOST: localhost
+          VECPARITY_TEST_CHROMA_PORT: "58000"
+          VECPARITY_TEST_MILVUS_URI: http://localhost:59530
+
+      - name: Tear down test backends
+        if: always()
+        run: docker compose -f docker-compose.test.yml down -v

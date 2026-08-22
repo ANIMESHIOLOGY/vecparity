@@ -34,7 +34,7 @@ pip install vecparity
 With backend support:
 
 ```bash
-pip install "vecparity[pgvector,qdrant,pinecone]"
+pip install "vecparity[pgvector,qdrant,pinecone,milvus,weaviate,chroma]"
 pip install "vecparity[all]"
 ```
 
@@ -114,6 +114,9 @@ For each query, VecParity compares the source's and target's top-k results:
 | pgvector | ✅ |
 | Qdrant | ✅ |
 | Pinecone | ✅ |
+| Milvus | ✅ |
+| Weaviate | ✅ |
+| Chroma | ✅ |
 | In-memory (testing / reference) | ✅ |
 
 Adding a backend means implementing `VectorDBAdapter` (`vecparity/adapters/base.py`) — see `adapters/memory.py` for the smallest possible reference implementation.

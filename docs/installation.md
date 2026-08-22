@@ -11,6 +11,9 @@ actually migrating between:
 pip install "vecparity[pgvector]"
 pip install "vecparity[qdrant]"
 pip install "vecparity[pinecone]"
+pip install "vecparity[milvus]"
+pip install "vecparity[weaviate]"
+pip install "vecparity[chroma]"
 
 # All backends
 pip install "vecparity[all]"

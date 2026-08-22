@@ -1,6 +1,6 @@
 # Spins up real backends for integration tests (tests/integration/).
 # `vecparity` itself has no runtime dependency on these — they only exist
-# to give pgvector/Qdrant adapter tests something real to talk to.
+# to give the adapter tests something real to talk to.
 #
 # Usage:
 #   docker compose -f docker-compose.test.yml up -d
@@ -30,3 +30,90 @@ services:
       interval: 2s
       timeout: 3s
       retries: 20
+
+  weaviate:
+    image: cr.weaviate.io/semitechnologies/weaviate:1.39.0
+    ports:
+      - "58080:8080"
+      - "58051:50051"
+    environment:
+      QUERY_DEFAULTS_LIMIT: 25
+      AUTHENTICATION_ANONYMOUS_ACCESS_ENABLED: "true"
+      PERSISTENCE_DATA_PATH: /var/lib/weaviate
+      DEFAULT_VECTORIZER_MODULE: none
+      ENABLE_MODULES: ""
+      CLUSTER_HOSTNAME: node1
+    healthcheck:
+      # This image is Alpine-based with no bash, so the /dev/tcp trick the
+      # other services' healthchecks use doesn't work here — wget is what's
+      # actually available, hitting Weaviate's own readiness endpoint.
+      test: ["CMD", "wget", "--spider", "-q", "http://localhost:8080/v1/.well-known/ready"]
+      interval: 2s
+      timeout: 3s
+      retries: 30
+
+  chroma:
+    image: chromadb/chroma:latest
+    ports:
+      - "58000:8000"
+    healthcheck:
+      test: ["CMD-SHELL", "bash -c 'cat < /dev/null > /dev/tcp/127.0.0.1/8000'"]
+      interval: 2s
+      timeout: 3s
+      retries: 20
+
+  # Milvus's standard 3-service standalone setup (etcd + minio + milvus).
+  # A single-container "embedded etcd" mode exists in some Milvus versions
+  # but panicked ("embedded etcd can not be used under distributed mode")
+  # against the image used here — this is the officially documented,
+  # stable configuration instead (from milvus-io/milvus's own
+  # deployments/docker/standalone/docker-compose.yml).
+  milvus-etcd:
+    image: quay.io/coreos/etcd:v3.5.25
+    environment:
+      ETCD_AUTO_COMPACTION_MODE: revision
+      ETCD_AUTO_COMPACTION_RETENTION: "1000"
+      ETCD_QUOTA_BACKEND_BYTES: "4294967296"
+      ETCD_SNAPSHOT_COUNT: "50000"
+    command: etcd -advertise-client-urls=http://milvus-etcd:2379 -listen-client-urls http://0.0.0.0:2379 --data-dir /etcd
+    healthcheck:
+      test: ["CMD", "etcdctl", "endpoint", "health"]
+      interval: 5s
+      timeout: 5s
+      retries: 20
+
+  milvus-minio:
+    image: minio/minio:RELEASE.2024-05-28T17-19-04Z
+    environment:
+      MINIO_ACCESS_KEY: minioadmin
+      MINIO_SECRET_KEY: minioadmin
+    command: minio server /minio_data --console-address ":9001"
+    healthcheck:
+      test: ["CMD", "mc", "ready", "local"]
+      interval: 5s
+      timeout: 5s
+      retries: 20
+
+  milvus:
+    image: milvusdb/milvus:v3.0.0
+    command: ["milvus", "run", "standalone"]
+    security_opt:
+      - seccomp:unconfined
+    environment:
+      MINIO_REGION: us-east-1
+      ETCD_ENDPOINTS: milvus-etcd:2379
+      MINIO_ADDRESS: milvus-minio:9000
+    ports:
+      - "59530:19530"
+      - "59091:9091"
+    healthcheck:
+      test: ["CMD", "curl", "-f", "http://localhost:9091/healthz"]
+      interval: 5s
+      start_period: 60s
+      timeout: 5s
+      retries: 30
+    depends_on:
+      milvus-etcd:
+        condition: service_healthy
+      milvus-minio:
+        condition: service_healthy
