@@ -50,6 +50,11 @@ dev = [
     "mypy>=1.8.0",
     "pre-commit>=3.0.0",
 ]
+docs = [
+    "mkdocs>=1.5.0",
+    "mkdocs-material>=9.0.0",
+    "mkdocstrings[python]>=0.24.0",
+]
 all = [
     "vecparity[pgvector,qdrant,pinecone]",
 ]

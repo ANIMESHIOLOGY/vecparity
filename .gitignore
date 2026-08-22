@@ -55,5 +55,9 @@ dmypy.json
 # Hatch
 .hatch/
 
+# Docs
+site/
+docs/_build/
+
 # Internal planning docs
 plans/

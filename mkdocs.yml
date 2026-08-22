@@ -1,0 +1,57 @@
+site_name: vecparity
+site_url: https://animeshiology.github.io/vecparity/
+repo_url: https://github.com/ANIMESHIOLOGY/vecparity
+repo_name: ANIMESHIOLOGY/vecparity
+edit_uri: edit/main/docs/
+
+theme:
+  name: material
+  palette:
+    - scheme: default
+      primary: indigo
+      accent: indigo
+      toggle:
+        icon: material/brightness-7
+        name: Switch to dark mode
+    - scheme: slate
+      primary: indigo
+      accent: indigo
+      toggle:
+        icon: material/brightness-4
+        name: Switch to light mode
+  features:
+    - navigation.tabs
+    - navigation.sections
+    - navigation.expand
+    - toc.integrate
+    - content.code.copy
+
+plugins:
+  - search
+  - mkdocstrings:
+      handlers:
+        python:
+          options:
+            docstring_style: google
+            show_source: true
+
+markdown_extensions:
+  - pymdownx.highlight:
+      anchor_linenums: true
+  - pymdownx.inlinehilite
+  - pymdownx.snippets
+  - pymdownx.superfences
+  - admonition
+  - tables
+
+nav:
+  - Home: index.md
+  - Installation: installation.md
+  - Quick Start: quickstart.md
+  - Backends: backends.md
+  - Design Principles: design-principles.md
+  - API Reference:
+      - adapters: api-reference/adapters.md
+      - sync: api-reference/sync.md
+      - verify: api-reference/verify.md
+      - types: api-reference/types.md

@@ -116,9 +116,13 @@ Adding a backend means implementing `VectorDBAdapter` (`vecparity/adapters/base.
 
 ---
 
+## Documentation
+
+Full docs, including per-backend connection details and design rationale, live at [animeshiology.github.io/vecparity](https://animeshiology.github.io/vecparity/).
+
 ## Contributing
 
-PRs, issues, and discussions are welcome — especially new backend adapters and real-world golden query sets for testing parity verification against production-shaped data.
+PRs, issues, and discussions are welcome — especially new backend adapters and real-world golden query sets for testing parity verification against production-shaped data. See [CONTRIBUTING.md](CONTRIBUTING.md) for dev setup, running tests, and code style.
 
 ## License
 
