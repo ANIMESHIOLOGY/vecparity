@@ -1,8 +1,4 @@
-"""In-memory adapter: used by tests and as a runnable reference implementation.
-
-Also handy for `vecparity migrate --from memory://fixture.json --to qdrant`
-style dry runs while wiring up a new backend.
-"""
+"""In-memory adapter: used by tests and as a reference implementation."""
 
 from __future__ import annotations
 

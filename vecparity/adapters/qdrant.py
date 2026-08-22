@@ -1,27 +1,9 @@
-"""Qdrant adapter.
+"""Qdrant adapter. Requires the `qdrant` extra.
 
-Requires the `qdrant` extra: `pip install vecparity[qdrant]`.
-
-Change tracking: Qdrant has no native change feed, so `list_changed_since`
-scrolls the collection filtered on a metadata field (default `updated_at`)
-that the caller is expected to maintain on writes. Point it at whatever
-timestamp field your payload already uses via `updated_at_field`.
-
-Point IDs: Qdrant only accepts an unsigned integer or a UUID as a point
-ID. Arbitrary strings (the norm for VectorRecord.id, e.g. document
-hashes or slugs from the source system) are rejected outright. This
-adapter maps every VectorRecord.id to a deterministic UUID5 for Qdrant's
-internal id and stores the caller's original id in the payload, so the
-public interface still accepts/returns arbitrary strings.
-
-Vector normalization: for collections created with Distance.COSINE,
-Qdrant stores (and returns via get/list_changed_since) the *normalized*
-vector, not the raw one you upserted. `get("x").vector` after
-`upsert(VectorRecord(id="x", vector=[1,2,3]))` will come back unit-length,
-same direction. This is exactly the kind of cross-backend discrepancy
-`verify_parity()` is built to catch: score/ranking parity, not raw
-vector byte-equality, is the thing that actually matters after a
-migration.
+Qdrant only accepts an unsigned integer or a UUID as a point id, so
+VectorRecord.id gets mapped to a deterministic UUID5, with the original
+id kept in the payload. For Distance.COSINE collections, Qdrant stores
+the normalized vector rather than the raw one upserted.
 """
 
 from __future__ import annotations
@@ -40,8 +22,7 @@ except ImportError as e:  # pragma: no cover
         "QdrantAdapter requires the 'qdrant' extra: pip install vecparity[qdrant]"
     ) from e
 
-# Fixed namespace so the same VectorRecord.id always maps to the same
-# Qdrant point id across processes/runs.
+# Fixed namespace for deterministic id -> UUID mapping across runs.
 _ID_NAMESPACE = uuid.UUID("6f2b1b7a-6e0a-4f0c-9b0a-6a4a8f9b6b0e")
 
 _ORIGINAL_ID_KEY = "__vecparity_id"
@@ -114,9 +95,7 @@ class QdrantAdapter(VectorDBAdapter):
                 break
 
     def search(self, vector: list[float], top_k: int) -> list[ScoredMatch]:
-        # qdrant-client >=1.10 dropped .search() in favor of .query_points();
-        # query_points defaults with_payload=True but we set it explicitly
-        # since we rely on it to recover the original id.
+        # qdrant-client >=1.10 dropped .search() in favor of .query_points().
         response = self.client.query_points(
             collection_name=self.collection,
             query=vector,

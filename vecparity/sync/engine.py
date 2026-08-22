@@ -1,11 +1,5 @@
-"""Incremental replication: the "live" in live migration.
-
-Polls the source adapter's `list_changed_since` cursor and replays new/
-updated records to the target in batches, so a migration can run
-alongside a live app instead of requiring a maintenance window. Callers
-drive the polling loop themselves (`run_once` / `run_forever`) so this
-stays a library, not a daemon that assumes a particular scheduler.
-"""
+"""Incremental replication: polls the source's list_changed_since cursor
+and replays new/updated records to the target in batches."""
 
 from __future__ import annotations
 
@@ -42,12 +36,7 @@ class SyncEngine:
 
     def run_once(self) -> int:
         """Replicate everything changed since the current cursor.
-
-        Returns the number of records synced this pass. Advances the
-        cursor to the max `updated_at` seen, so the next call only picks
-        up new changes. This is what makes repeated calls (e.g. on a
-        polling loop) incremental rather than full re-copies.
-        """
+        Returns the number of records synced, and advances the cursor."""
         batch: list[VectorRecord] = []
         synced = 0
         max_seen = self.cursor
@@ -73,11 +62,7 @@ class SyncEngine:
         return synced
 
     def run_until_caught_up(self, poll_interval: float = 5.0, idle_passes: int = 2) -> None:
-        """Poll `run_once` until N consecutive passes sync nothing.
-
-        Useful for a one-shot "catch up then stop" migration rather than
-        an indefinitely running daemon; call this right before cutover.
-        """
+        """Poll `run_once` until N consecutive passes sync nothing."""
         consecutive_idle = 0
         while consecutive_idle < idle_passes:
             synced = self.run_once()

@@ -1,51 +1,15 @@
-"""Milvus adapter.
+"""Milvus adapter. Requires the `milvus` extra.
 
-Requires the `milvus` extra: `pip install vecparity[milvus]`.
+Assumes a collection with a VARCHAR primary key, a FLOAT_VECTOR field,
+a JSON metadata field, and a DOUBLE updated_at field (field names
+configurable via the constructor). Must be `load()`ed before use; an
+unloaded collection returns empty results instead of an error.
 
-Assumes a collection already created with (at minimum) a VARCHAR
-primary key field, a FLOAT_VECTOR field, a JSON metadata field, and a
-DOUBLE updated_at field, e.g.:
+For a COSINE-metric collection, the `distance` field in search results
+is already the similarity score, no `1 - distance` conversion needed.
 
-    from pymilvus import MilvusClient, DataType
-    schema = client.create_schema(auto_id=False)
-    schema.add_field("id", DataType.VARCHAR, is_primary=True, max_length=256)
-    schema.add_field("vector", DataType.FLOAT_VECTOR, dim=768)
-    schema.add_field("metadata", DataType.JSON)
-    schema.add_field("updated_at", DataType.DOUBLE)
-    client.create_collection(name, schema=schema)
-    client.create_index(name, field_name="vector", metric_type="COSINE")
-    client.load_collection(name)
-
-Field names are configurable via the constructor if yours differ.
-
-Unlike Qdrant/Weaviate, Milvus places no restriction on the primary
-key value beyond the declared VARCHAR type, so arbitrary strings work
-natively, no id-mapping trick needed here.
-
-Milvus requires the collection be explicitly `load()`ed before search
-or query works. An unloaded collection returns empty results rather
-than an error, which is an easy way to silently think an adapter is
-broken when it's actually just an un-loaded collection. This adapter
-does not call `load_collection()` itself (it's a slow, whole-collection
-operation the caller should control), so make sure the collection is
-loaded before using this adapter.
-
-Score semantics: for a COSINE-metric collection, the `distance` field
-in Milvus's search results is already the cosine similarity (higher =
-better) despite the field's name. Milvus does not need the same
-`1 - distance` conversion the other adapters use. Verified against a
-real Milvus instance in the integration tests.
-
-Consistency: Milvus defaults to "Bounded" consistency, where a read
-can briefly miss a write that just happened (or see a stale prior
-value on an overwrite). Confirmed by this adapter's own integration
-tests initially failing with exactly that symptom (upsert "succeeds"
-but an immediate get()/count() sees nothing or stale data). Every read
-here passes `consistency_level="Strong"` to force read-your-writes
-visibility, which is what a migration/verification tool needs: a
-correctness tool that can't see its own most recent write isn't
-trustworthy, and the throughput cost of strong consistency is a
-reasonable trade for that here.
+Reads pass `consistency_level="Strong"`: Milvus defaults to "Bounded"
+consistency, where a read can briefly miss a write that just happened.
 """
 
 from __future__ import annotations

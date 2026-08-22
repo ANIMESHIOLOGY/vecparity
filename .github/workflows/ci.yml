@@ -64,12 +64,8 @@ jobs:
   integration:
     name: Integration Tests (all backends)
     runs-on: ubuntu-latest
-    # Milvus needs etcd + minio started first, in that dependency order,
-    # which GitHub Actions' native `services:` block can't express (it
-    # starts every service in parallel with no depends_on support). Using
-    # docker-compose.test.yml directly here also means there's exactly one
-    # place, not two divergent YAML definitions, describing how to stand
-    # up the test backends, same file contributors use locally.
+    # Uses docker-compose.test.yml directly since GitHub Actions'
+    # `services:` block can't express Milvus's etcd/minio dependency order.
     steps:
       - uses: actions/checkout@v4
 
@@ -81,12 +77,7 @@ jobs:
         run: pip install -e ".[all,dev]"
 
       - name: Start test backends
-        # Retries on a transient Docker networking race seen on shared
-        # runners: "failed to bind host port ... address already in use"
-        # for a port nothing else in this job actually uses. A
-        # docker-proxy port-binding flake, not a real conflict (every
-        # other service in the same `up` call started fine). A clean
-        # `down -v` + retry clears it.
+        # Retries on a transient Docker port-binding flake seen on runners.
         run: |
           for attempt in 1 2 3; do
             if docker compose -f docker-compose.test.yml up -d --wait; then

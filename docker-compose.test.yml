@@ -1,8 +1,4 @@
-# Spins up real backends for integration tests (tests/integration/).
-# `vecparity` itself has no runtime dependency on these; they only exist
-# to give the adapter tests something real to talk to.
-#
-# Usage:
+# Real backends for integration tests (tests/integration/).
 #   docker compose -f docker-compose.test.yml up -d
 #   pytest -m integration
 #   docker compose -f docker-compose.test.yml down -v
@@ -44,9 +40,7 @@ services:
       ENABLE_MODULES: ""
       CLUSTER_HOSTNAME: node1
     healthcheck:
-      # This image is Alpine-based with no bash, so the /dev/tcp trick the
-      # other services' healthchecks use doesn't work here. wget is what's
-      # actually available, hitting Weaviate's own readiness endpoint.
+      # Alpine image has no bash for the /dev/tcp trick; use wget instead.
       test: ["CMD", "wget", "--spider", "-q", "http://localhost:8080/v1/.well-known/ready"]
       interval: 2s
       timeout: 3s
@@ -63,11 +57,6 @@ services:
       retries: 20
 
   # Milvus's standard 3-service standalone setup (etcd + minio + milvus).
-  # A single-container "embedded etcd" mode exists in some Milvus versions
-  # but panicked ("embedded etcd can not be used under distributed mode")
-  # against the image used here. This is the officially documented,
-  # stable configuration instead (from milvus-io/milvus's own
-  # deployments/docker/standalone/docker-compose.yml).
   milvus-etcd:
     image: quay.io/coreos/etcd:v3.5.25
     environment:

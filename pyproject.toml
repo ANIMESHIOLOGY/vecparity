@@ -9,13 +9,7 @@ description = "Live, quality-verified migration between vector databases: proves
 authors = [{ name = "Animesh" }]
 license = { file = "LICENSE" }
 readme = "README.md"
-# Not 3.9: PEP 604 `X | None` unions are used throughout, including in
-# pydantic models and Typer CLI option types. Both resolve annotations
-# at runtime, not just for static type-checkers, which needs real
-# interpreter support for the `|` operator on types, only available
-# from 3.10 on. Python 3.9 also reached end-of-life 2025-10-31, so
-# there's no reason to contort the codebase (or add the
-# eval_type_backport shim) to support it.
+# PEP 604 unions need real interpreter support (3.10+); Python 3.9 is also EOL.
 requires-python = ">=3.10"
 keywords = ["vector-database", "migration", "rag", "pgvector", "qdrant", "pinecone", "embeddings", "retrieval"]
 classifiers = [
@@ -84,8 +78,7 @@ ignore = ["E501"]
 
 [tool.ruff.lint.per-file-ignores]
 "tests/**" = ["ANN", "E501"]
-# Calling typer.Option(...) as an argument default is the required Typer
-# pattern, not the mutable-default-argument footgun B008 warns about.
+# typer.Option(...) as a default is the required Typer pattern, not B008.
 "vecparity/cli.py" = ["B008"]
 
 [tool.black]
@@ -93,22 +86,16 @@ line-length = 100
 target-version = ["py310", "py311", "py312"]
 
 [tool.mypy]
-# Higher than the requires-python floor (3.10): the installed numpy's
-# stubs use 3.12 `type` statement syntax mypy insists on parsing at the
-# declared target version. This governs mypy's own syntax checking only;
-# it doesn't change vecparity's actual supported-runtime floor.
+# 3.12 for mypy's own syntax parsing; numpy's stubs need it.
 python_version = "3.12"
 plugins = ["pydantic.mypy"]
 strict = true
 ignore_missing_imports = true
 exclude = ["tests/", "build/", "dist/"]
-# NOT no_site_packages=true: that blocks mypy from resolving *any*
-# installed package (including pydantic itself), which silently degrades
-# BaseModel to `Any` and defeats every pydantic-aware check below it.
+# NOT no_site_packages=true: that would block resolving pydantic itself.
 
 [[tool.mypy.overrides]]
-# Typer's @app.command() decorator has no type stubs strict mode is happy
-# with; this is a known Typer/mypy interop gap, not a real typing hole.
+# Typer's @app.command() decorator has no strict-mode-friendly type stubs.
 module = "vecparity.cli"
 disallow_untyped_decorators = false
 

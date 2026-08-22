@@ -1,24 +1,9 @@
-"""Weaviate adapter.
+"""Weaviate adapter. Requires the `weaviate` extra.
 
-Requires the `weaviate` extra: `pip install vecparity[weaviate]`.
-
-Object IDs: like Qdrant, Weaviate requires every object id to be a
-UUID. Arbitrary strings are rejected. Same fix as QdrantAdapter: map
-VectorRecord.id to a deterministic UUID5 and keep the caller's original
-id in a property, so the public interface still accepts/returns
-arbitrary strings.
-
-Change tracking: no native change feed, so `list_changed_since` filters
-on a property (default `updated_at`) the caller maintains on writes,
-paginating via `fetch_objects(after=...)` cursor.
-
-Upsert: the v4 client's `data.insert()` fails if the id already
-exists and `data.replace()` fails if it doesn't. There's no single
-upsert call, so this adapter checks `data.exists()` first.
-
-Score semantics: `near_vector()` returns `distance`, not similarity;
-same `score = 1 - distance` conversion as ChromaAdapter, assuming a
-cosine-distance collection.
+Weaviate requires object ids to be UUIDs, so VectorRecord.id gets
+mapped to a deterministic UUID5, with the original id kept in a
+property. `near_vector()` returns `distance`, converted to a
+similarity score the same way as ChromaAdapter.
 """
 
 from __future__ import annotations
@@ -37,8 +22,7 @@ except ImportError as e:  # pragma: no cover
         "WeaviateAdapter requires the 'weaviate' extra: pip install vecparity[weaviate]"
     ) from e
 
-# Fixed namespace so the same VectorRecord.id always maps to the same
-# Weaviate object UUID across processes/runs.
+# Fixed namespace for deterministic id -> UUID mapping across runs.
 _ID_NAMESPACE = uuid.UUID("3c9a5b7e-2f1d-4a6c-8e0b-7d5f9a1c3b2e")
 
 _ORIGINAL_ID_KEY = "_vecparity_id"

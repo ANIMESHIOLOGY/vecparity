@@ -1,9 +1,4 @@
-"""VecParity: live, quality-verified migration between vector databases.
-
-Moves vector data from one vector database to another and proves, with a
-retrieval-quality parity report, not just a row count, that the new
-database returns the same search results before you cut over.
-"""
+"""VecParity: live, quality-verified migration between vector databases."""
 
 from vecparity.verify.parity import ParityReport, verify_parity
 

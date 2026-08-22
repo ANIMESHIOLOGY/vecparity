@@ -1,10 +1,4 @@
-"""Parity verification tests using the in-memory adapter: no docker required.
-
-These validate the core differentiator (recall@k / overlap / score-drift
-math) in isolation. Adapter-specific integration tests belong in
-test_adapters_pgvector.py / test_adapters_qdrant.py, gated behind the
-`integration` marker (require docker), not here.
-"""
+"""Parity verification tests using the in-memory adapter: no docker required."""
 
 from __future__ import annotations
 

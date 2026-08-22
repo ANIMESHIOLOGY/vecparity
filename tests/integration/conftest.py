@@ -1,13 +1,7 @@
 """Fixtures for adapter integration tests.
 
-These connect to real backends (see ../../docker-compose.test.yml) rather
-than mocking anything. The whole point of these tests is to catch the
-class of bug unit tests against the in-memory adapter can't: wrong SQL,
-missing type adapters, wrong client API calls.
-
-Every fixture skips (not fails) if its backend isn't reachable, so
-`pytest` stays green without docker running locally; CI starts the
-same docker-compose.test.yml stack before running these.
+Connect to real backends (see ../../docker-compose.test.yml). Every
+fixture skips (not fails) if its backend isn't reachable.
 """
 
 from __future__ import annotations

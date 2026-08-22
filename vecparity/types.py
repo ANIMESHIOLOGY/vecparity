@@ -17,9 +17,7 @@ class VectorRecord(BaseModel):
     vector: list[float]
     metadata: dict[str, Any] = {}
     updated_at: float | None = None
-    """Unix timestamp of last write, used for incremental sync cursors.
-    Backends without native change tracking should populate this from a
-    metadata field the caller designates (see adapter docs)."""
+    """Unix timestamp of last write, used for incremental sync cursors."""
 
     def as_array(self) -> np.ndarray:
         return np.asarray(self.vector, dtype=np.float32)

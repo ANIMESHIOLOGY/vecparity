@@ -1,20 +1,8 @@
-"""Retrieval-quality parity verification: the actual differentiator.
+"""Retrieval-quality parity verification.
 
-Existing migration tools (vector-io/VDF, vendor migration guides) confirm
-data *arrived*: row counts match, ids exist. None of them confirm the new
-database still *retrieves the same things*, which is the only thing that
-actually matters to the app sitting on top of it.
-
-This module runs a query set against both the source and target adapters
-and compares:
-
-  - recall@k:    fraction of the source's top-k ids also in target's top-k
-  - rank overlap: Jaccard overlap of the top-k id sets
-  - score drift:  mean absolute difference in similarity scores for
-                  ids present in both result sets
-
-A ParityReport aggregates these per-query results and exposes `passed`
-against caller-supplied thresholds, so it can gate a migration in CI.
+Runs a query set against both the source and target adapters and
+compares recall@k, Jaccard overlap of top-k ids, and mean score drift.
+ParityReport exposes `passed` against a caller-supplied threshold.
 """
 
 from __future__ import annotations
@@ -110,11 +98,7 @@ def verify_parity(
     min_recall_at_k: float = 0.9,
 ) -> ParityReport:
     """Run every query against both adapters and score retrieval parity.
-
-    Raises ValueError if a QueryCase references a query_id that isn't
-    found in the source. Fail loud rather than silently skipping a case
-    the caller expected to be evaluated.
-    """
+    Raises ValueError if a query_id isn't found in the source."""
     results: list[QueryResult] = []
     for q in queries:
         vector = q.query_vector

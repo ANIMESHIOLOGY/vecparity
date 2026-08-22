@@ -1,9 +1,4 @@
-"""The adapter protocol every backend implements.
-
-Deliberately minimal: five operations is enough to migrate and verify, and
-keeping it small is what keeps this a migration tool instead of a leaky
-permanent ORM.
-"""
+"""The adapter protocol every backend implements. Deliberately minimal."""
 
 from __future__ import annotations
 
@@ -31,17 +26,11 @@ class VectorDBAdapter(ABC):
     @abstractmethod
     def list_changed_since(self, cursor: float | None) -> Iterator[VectorRecord]:
         """Yield records created/updated after `cursor` (a unix timestamp).
-
-        `cursor=None` means "from the beginning" (full backfill). This is
-        the primitive the incremental sync engine polls to avoid re-copying
-        the whole collection on every pass. Backends without native change
-        feeds should implement this via an `updated_at` metadata field.
-        """
+        `cursor=None` means from the beginning (full backfill)."""
 
     @abstractmethod
     def search(self, vector: list[float], top_k: int) -> list[ScoredMatch]:
-        """Run a similarity search. Used only for parity verification,
-        never exposed as a general query API by design."""
+        """Run a similarity search, used only for parity verification."""
 
     @abstractmethod
     def count(self) -> int:

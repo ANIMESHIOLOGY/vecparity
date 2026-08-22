@@ -1,9 +1,7 @@
 """`vecparity migrate --from ... --to ... --live --verify-parity`
 
-The CLI wires adapters + sync engine + parity verifier together. Adapter
-construction from a connection string is deliberately simple (env-var
-driven) rather than a big config DSL: see docs/backends.md for the
-env vars each backend reads.
+Connection details are read from env vars, documented per-backend in
+docs/backends.md, rather than CLI flags.
 """
 
 from __future__ import annotations
@@ -29,12 +27,9 @@ console = Console()
 def version() -> None:
     """Print the installed vecparity version.
 
-    Also has a side effect that matters: Typer silently collapses a
-    single-command app so `vecparity migrate ...` and `vecparity ...`
-    both work identically, dropping "migrate" from every example in the
-    README. A second command keeps `migrate` a real, required subcommand
-    (verified: `vecparity --from ... --to ...` 404s with "Got unexpected
-    extra argument(s)" once there are two commands registered).
+    Also keeps Typer from collapsing this into a single-command app,
+    which would make `migrate` an implicit default instead of a
+    required subcommand.
     """
     from vecparity import __version__
 
@@ -42,12 +37,7 @@ def version() -> None:
 
 
 def _load_adapter(spec: str) -> VectorDBAdapter:
-    """spec looks like 'pgvector://mytable' or 'qdrant://mycollection'.
-
-    Connection details (host, port, api key) are read from env vars
-    documented per-backend in docs/backends.md, kept out of the CLI
-    surface so nothing sensitive ends up in shell history.
-    """
+    """spec looks like 'pgvector://mytable' or 'qdrant://mycollection'."""
     backend, _, name = spec.partition("://")
     if backend == "memory":
         from vecparity.adapters.memory import MemoryAdapter
@@ -60,11 +50,8 @@ def _load_adapter(spec: str) -> VectorDBAdapter:
 
         from vecparity.adapters.qdrant import QdrantAdapter
 
-        # Separate variable names per branch (qdrant_client, pinecone_client,
-        # below) rather than reusing `client`: mypy infers one type for a
-        # name from its first assignment in the function and flags any
-        # later branch that assigns it a different client type, even though
-        # only one branch ever actually executes.
+        # Separate variable names per branch to avoid mypy flagging a
+        # reused name across branches that assign different client types.
         qdrant_client = QdrantClient(
             url=os.environ.get("QDRANT_URL", "http://localhost:6333"),
             api_key=os.environ.get("QDRANT_API_KEY"),

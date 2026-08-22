@@ -1,17 +1,9 @@
-"""Pinecone adapter.
+"""Pinecone adapter. Requires the `pinecone` extra.
 
-Requires the `pinecone` extra: `pip install vecparity[pinecone]`.
-
-Change tracking: like Qdrant, Pinecone has no native change feed exposed
-through the client used here, so `list_changed_since` scrolls the index
-via `list()` + `fetch()` and filters on a metadata field (default
-`updated_at`) the caller maintains on writes.
-
-Note: Pinecone's `list()` only returns ids (no vectors/metadata), so
-`list_changed_since` has to `fetch()` each page of ids separately, which
-makes it the slowest adapter to backfill from. Fine for its intended use
-(migrating *out of* Pinecone), less fine as a sync source for anything
-long-running.
+Pinecone's `list()` only returns ids, so `list_changed_since` fetches
+each page separately, making it the slowest adapter to backfill from.
+Fine for migrating out of Pinecone, less fine as a long-running sync
+source.
 """
 
 from __future__ import annotations
@@ -63,10 +55,7 @@ class PineconeAdapter(VectorDBAdapter):
 
     def list_changed_since(self, cursor: float | None) -> Iterator[VectorRecord]:
         # index.list() yields ListResponse pages, each holding a batch of
-        # ListItem(id=...) entries, not bare id strings. (Confirmed against
-        # the installed pinecone-client; this used to append the page
-        # object itself into id_batch, which would have broken the
-        # downstream fetch() call on any real Pinecone index.)
+        # ListItem(id=...) entries, not bare id strings.
         id_batch: list[str] = []
         for page in self.index.list(namespace=self.namespace):
             for item in page.vectors:
