@@ -8,16 +8,18 @@ theme:
   name: material
   logo: assets/vecparity_logo.png
   favicon: assets/vecparity_logo.png
+  icon:
+    repo: fontawesome/brands/github
   palette:
     - scheme: default
-      primary: indigo
-      accent: indigo
+      primary: blue
+      accent: purple
       toggle:
         icon: material/brightness-7
         name: Switch to dark mode
     - scheme: slate
-      primary: indigo
-      accent: indigo
+      primary: blue
+      accent: purple
       toggle:
         icon: material/brightness-4
         name: Switch to light mode
@@ -25,11 +27,28 @@ theme:
     - navigation.tabs
     - navigation.sections
     - navigation.expand
+    - navigation.top
+    - navigation.footer
     - toc.integrate
     - content.code.copy
+    - content.tooltips
+    - search.suggest
+    - search.highlight
+
+extra_css:
+  - stylesheets/extra.css
+
+extra:
+  social:
+    - icon: fontawesome/brands/github
+      link: https://github.com/ANIMESHIOLOGY/vecparity
+      name: vecparity on GitHub
 
 plugins:
   - search
+  - git-revision-date-localized:
+      type: date
+      enable_creation_date: false
   - mkdocstrings:
       handlers:
         python:
@@ -43,6 +62,12 @@ markdown_extensions:
   - pymdownx.inlinehilite
   - pymdownx.snippets
   - pymdownx.superfences
+  - pymdownx.details
+  - pymdownx.tabbed:
+      alternate_style: true
+  - pymdownx.emoji:
+      emoji_index: !!python/name:material.extensions.emoji.twemoji
+      emoji_generator: !!python/name:material.extensions.emoji.to_svg
   - admonition
   - tables
 
