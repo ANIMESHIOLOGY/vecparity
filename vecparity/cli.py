@@ -2,7 +2,7 @@
 
 The CLI wires adapters + sync engine + parity verifier together. Adapter
 construction from a connection string is deliberately simple (env-var
-driven) rather than a big config DSL — see docs/backends.md for the
+driven) rather than a big config DSL: see docs/backends.md for the
 env vars each backend reads.
 """
 
@@ -31,7 +31,7 @@ def version() -> None:
 
     Also has a side effect that matters: Typer silently collapses a
     single-command app so `vecparity migrate ...` and `vecparity ...`
-    both work identically — dropping "migrate" from every example in the
+    both work identically, dropping "migrate" from every example in the
     README. A second command keeps `migrate` a real, required subcommand
     (verified: `vecparity --from ... --to ...` 404s with "Got unexpected
     extra argument(s)" once there are two commands registered).

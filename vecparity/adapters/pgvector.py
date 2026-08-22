@@ -112,8 +112,8 @@ class PgVectorAdapter(VectorDBAdapter):
         # register_vector() adapts a *column's* type from context (e.g. the
         # target column in an INSERT), but a bare query parameter compared
         # via <=> has no such context, so Postgres infers it as
-        # `double precision[]` and the operator lookup fails — needs an
-        # explicit ::vector cast here.
+        # `double precision[]` and the operator lookup fails, so it needs
+        # an explicit ::vector cast here.
         with self.conn.cursor() as cur:
             cur.execute(
                 f"""
@@ -139,7 +139,7 @@ class PgVectorAdapter(VectorDBAdapter):
         # pgvector-python returns its own Vector wrapper (not directly
         # iterable) around a numpy array; Pydantic's list[float] also needs
         # plain floats, not numpy scalars, to validate without strict-mode
-        # errors — hence the explicit to_list() + float() conversion.
+        # errors, hence the explicit to_list() + float() conversion.
         return VectorRecord(
             id=id,
             vector=[float(x) for x in vector.to_list()],

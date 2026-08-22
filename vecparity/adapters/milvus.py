@@ -4,7 +4,7 @@ Requires the `milvus` extra: `pip install vecparity[milvus]`.
 
 Assumes a collection already created with (at minimum) a VARCHAR
 primary key field, a FLOAT_VECTOR field, a JSON metadata field, and a
-DOUBLE updated_at field — e.g.:
+DOUBLE updated_at field, e.g.:
 
     from pymilvus import MilvusClient, DataType
     schema = client.create_schema(auto_id=False)
@@ -19,11 +19,11 @@ DOUBLE updated_at field — e.g.:
 Field names are configurable via the constructor if yours differ.
 
 Unlike Qdrant/Weaviate, Milvus places no restriction on the primary
-key value beyond the declared VARCHAR type — arbitrary strings work
+key value beyond the declared VARCHAR type, so arbitrary strings work
 natively, no id-mapping trick needed here.
 
 Milvus requires the collection be explicitly `load()`ed before search
-or query works — an unloaded collection returns empty results rather
+or query works. An unloaded collection returns empty results rather
 than an error, which is an easy way to silently think an adapter is
 broken when it's actually just an un-loaded collection. This adapter
 does not call `load_collection()` itself (it's a slow, whole-collection
@@ -32,17 +32,17 @@ loaded before using this adapter.
 
 Score semantics: for a COSINE-metric collection, the `distance` field
 in Milvus's search results is already the cosine similarity (higher =
-better) despite the field's name — Milvus does not need the same
+better) despite the field's name. Milvus does not need the same
 `1 - distance` conversion the other adapters use. Verified against a
 real Milvus instance in the integration tests.
 
 Consistency: Milvus defaults to "Bounded" consistency, where a read
 can briefly miss a write that just happened (or see a stale prior
-value on an overwrite) — confirmed by this adapter's own integration
+value on an overwrite). Confirmed by this adapter's own integration
 tests initially failing with exactly that symptom (upsert "succeeds"
 but an immediate get()/count() sees nothing or stale data). Every read
 here passes `consistency_level="Strong"` to force read-your-writes
-visibility, which is what a migration/verification tool needs — a
+visibility, which is what a migration/verification tool needs: a
 correctness tool that can't see its own most recent write isn't
 trustworthy, and the throughput cost of strong consistency is a
 reasonable trade for that here.

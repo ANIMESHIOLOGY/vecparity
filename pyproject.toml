@@ -5,16 +5,17 @@ build-backend = "hatchling.build"
 [project]
 name = "vecparity"
 version = "0.1.0"
-description = "Live, quality-verified migration between vector databases — proves retrieval quality survived the switch before you cut over."
+description = "Live, quality-verified migration between vector databases: proves retrieval quality survived the switch before you cut over."
 authors = [{ name = "Animesh" }]
 license = { file = "LICENSE" }
 readme = "README.md"
-# Not 3.9: PEP 604 `X | None` unions (used throughout, including in
-# pydantic models and Typer CLI option types — both resolve annotations
-# at runtime, not just for static type-checkers) need real interpreter
-# support for the `|` operator on types, which only exists from 3.10 on.
-# Python 3.9 also reached end-of-life 2025-10-31, so there's no reason to
-# contort the codebase (or add the eval_type_backport shim) to support it.
+# Not 3.9: PEP 604 `X | None` unions are used throughout, including in
+# pydantic models and Typer CLI option types. Both resolve annotations
+# at runtime, not just for static type-checkers, which needs real
+# interpreter support for the `|` operator on types, only available
+# from 3.10 on. Python 3.9 also reached end-of-life 2025-10-31, so
+# there's no reason to contort the codebase (or add the
+# eval_type_backport shim) to support it.
 requires-python = ">=3.10"
 keywords = ["vector-database", "migration", "rag", "pgvector", "qdrant", "pinecone", "embeddings", "retrieval"]
 classifiers = [
@@ -94,7 +95,7 @@ target-version = ["py310", "py311", "py312"]
 [tool.mypy]
 # Higher than the requires-python floor (3.10): the installed numpy's
 # stubs use 3.12 `type` statement syntax mypy insists on parsing at the
-# declared target version. This governs mypy's own syntax checking only —
+# declared target version. This governs mypy's own syntax checking only;
 # it doesn't change vecparity's actual supported-runtime floor.
 python_version = "3.12"
 plugins = ["pydantic.mypy"]
@@ -107,7 +108,7 @@ exclude = ["tests/", "build/", "dist/"]
 
 [[tool.mypy.overrides]]
 # Typer's @app.command() decorator has no type stubs strict mode is happy
-# with — this is a known Typer/mypy interop gap, not a real typing hole.
+# with; this is a known Typer/mypy interop gap, not a real typing hole.
 module = "vecparity.cli"
 disallow_untyped_decorators = false
 

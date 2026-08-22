@@ -8,7 +8,7 @@ that the caller is expected to maintain on writes. Point it at whatever
 timestamp field your payload already uses via `updated_at_field`.
 
 Point IDs: Qdrant only accepts an unsigned integer or a UUID as a point
-ID — arbitrary strings (the norm for VectorRecord.id, e.g. document
+ID. Arbitrary strings (the norm for VectorRecord.id, e.g. document
 hashes or slugs from the source system) are rejected outright. This
 adapter maps every VectorRecord.id to a deterministic UUID5 for Qdrant's
 internal id and stores the caller's original id in the payload, so the
@@ -19,7 +19,7 @@ Qdrant stores (and returns via get/list_changed_since) the *normalized*
 vector, not the raw one you upserted. `get("x").vector` after
 `upsert(VectorRecord(id="x", vector=[1,2,3]))` will come back unit-length,
 same direction. This is exactly the kind of cross-backend discrepancy
-`verify_parity()` is built to catch — score/ranking parity, not raw
+`verify_parity()` is built to catch: score/ranking parity, not raw
 vector byte-equality, is the thing that actually matters after a
 migration.
 """

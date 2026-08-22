@@ -8,7 +8,7 @@ via `list()` + `fetch()` and filters on a metadata field (default
 `updated_at`) the caller maintains on writes.
 
 Note: Pinecone's `list()` only returns ids (no vectors/metadata), so
-`list_changed_since` has to `fetch()` each page of ids separately — this
+`list_changed_since` has to `fetch()` each page of ids separately, which
 makes it the slowest adapter to backfill from. Fine for its intended use
 (migrating *out of* Pinecone), less fine as a sync source for anything
 long-running.
@@ -63,7 +63,7 @@ class PineconeAdapter(VectorDBAdapter):
 
     def list_changed_since(self, cursor: float | None) -> Iterator[VectorRecord]:
         # index.list() yields ListResponse pages, each holding a batch of
-        # ListItem(id=...) entries — not bare id strings. (Confirmed against
+        # ListItem(id=...) entries, not bare id strings. (Confirmed against
         # the installed pinecone-client; this used to append the page
         # object itself into id_batch, which would have broken the
         # downstream fetch() call on any real Pinecone index.)

@@ -3,8 +3,9 @@
 Run: docker compose -f docker-compose.test.yml up -d && pytest -m integration
 
 Milvus takes noticeably longer to become healthy than the other
-backends (embedded etcd + storage init) — the docker-compose healthcheck
-accounts for this with more retries.
+backends (it depends on separate etcd and minio containers coming up
+first). The docker-compose healthcheck accounts for this with a longer
+start_period and more retries.
 """
 
 from __future__ import annotations

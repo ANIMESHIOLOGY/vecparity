@@ -19,7 +19,7 @@ Python:
 ## Minimal Reproduction
 
 ```python
-# Paste the smallest code — or CLI invocation — that reproduces the bug
+# Paste the smallest code (or CLI invocation) that reproduces the bug
 ```
 
 ## Expected Behavior

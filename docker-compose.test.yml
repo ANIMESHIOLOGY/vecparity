@@ -1,5 +1,5 @@
 # Spins up real backends for integration tests (tests/integration/).
-# `vecparity` itself has no runtime dependency on these — they only exist
+# `vecparity` itself has no runtime dependency on these; they only exist
 # to give the adapter tests something real to talk to.
 #
 # Usage:
@@ -45,7 +45,7 @@ services:
       CLUSTER_HOSTNAME: node1
     healthcheck:
       # This image is Alpine-based with no bash, so the /dev/tcp trick the
-      # other services' healthchecks use doesn't work here — wget is what's
+      # other services' healthchecks use doesn't work here. wget is what's
       # actually available, hitting Weaviate's own readiness endpoint.
       test: ["CMD", "wget", "--spider", "-q", "http://localhost:8080/v1/.well-known/ready"]
       interval: 2s
@@ -65,7 +65,7 @@ services:
   # Milvus's standard 3-service standalone setup (etcd + minio + milvus).
   # A single-container "embedded etcd" mode exists in some Milvus versions
   # but panicked ("embedded etcd can not be used under distributed mode")
-  # against the image used here — this is the officially documented,
+  # against the image used here. This is the officially documented,
   # stable configuration instead (from milvus-io/milvus's own
   # deployments/docker/standalone/docker-compose.yml).
   milvus-etcd:

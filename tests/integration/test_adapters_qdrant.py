@@ -37,8 +37,8 @@ def test_upsert_and_get_roundtrip(adapter):
     assert fetched is not None
     assert fetched.id == "a"
     # Qdrant stores cosine-collection vectors normalized, so it doesn't
-    # return the exact bytes we upserted — assert same direction instead.
-    # (See the adapter's module docstring — this is a real, documented
+    # return the exact bytes we upserted; assert same direction instead.
+    # (See the adapter's module docstring: this is a real, documented
     # discrepancy, exactly the class of thing verify_parity() exists for.)
     import numpy as np
 

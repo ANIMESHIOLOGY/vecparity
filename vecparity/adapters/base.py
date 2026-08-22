@@ -40,7 +40,7 @@ class VectorDBAdapter(ABC):
 
     @abstractmethod
     def search(self, vector: list[float], top_k: int) -> list[ScoredMatch]:
-        """Run a similarity search — used only for parity verification,
+        """Run a similarity search. Used only for parity verification,
         never exposed as a general query API by design."""
 
     @abstractmethod

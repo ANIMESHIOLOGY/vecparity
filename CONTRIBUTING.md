@@ -18,13 +18,13 @@ pre-commit install
 ## Running Tests
 
 ```bash
-# Unit tests only — no external services required
+# Unit tests only, no external services required
 pytest tests/ -m "not integration" --ignore=tests/integration
 
 # With coverage
 pytest tests/ --cov=vecparity -m "not integration" --ignore=tests/integration
 
-# Integration tests — need real backend instances (pgvector, Qdrant,
+# Integration tests: need real backend instances (pgvector, Qdrant,
 # Milvus, Weaviate, Chroma). docker-compose.test.yml spins up all five.
 docker compose -f docker-compose.test.yml up -d
 pytest tests/integration/ -m integration
@@ -33,7 +33,7 @@ docker compose -f docker-compose.test.yml down -v
 
 Integration tests are what actually catch backend-specific bugs (wrong SQL,
 missing type adapters, wrong client API calls) that the in-memory adapter's
-unit tests can't — see `tests/integration/` before assuming a change to an
+unit tests can't. See `tests/integration/` before assuming a change to an
 adapter is safe just because unit tests pass.
 
 ## Code Style
@@ -52,14 +52,14 @@ mypy vecparity/
 
 ## Adding a New Backend Adapter
 
-Implement `vecparity.adapters.base.VectorDBAdapter` — five methods:
+Implement `vecparity.adapters.base.VectorDBAdapter`: five methods,
 `get`, `upsert`, `delete`, `list_changed_since`, `search`, plus `count`.
 Deliberately minimal by design (see the module docstring in `base.py`):
 resist the urge to grow the interface into a general query API, that's
 how this kind of tool ends up a leaky permanent ORM instead of a
 migration tool.
 
-1. `vecparity/adapters/memory.py` is the smallest reference implementation — start there.
+1. `vecparity/adapters/memory.py` is the smallest reference implementation; start there.
 2. `vecparity/adapters/qdrant.py` or `pgvector.py` show what a real backend with quirks (id-type restrictions, missing native `search()`, type casting) looks like.
 3. Add an optional dependency group in `pyproject.toml`.
 4. Wire it into `_load_adapter()` in `cli.py`, and document its env vars in `docs/backends.md`.
@@ -67,9 +67,9 @@ migration tool.
 
 ## Branch Naming
 
-- `adapter/<backend-name>` — new backend adapter
-- `fix/<short-description>` — bug fix
-- `docs/<topic>` — documentation only
+- `adapter/<backend-name>`: new backend adapter
+- `fix/<short-description>`: bug fix
+- `docs/<topic>`: documentation only
 
 ## PR Checklist
 
@@ -81,7 +81,7 @@ migration tool.
 ## Docstring Standard
 
 Module and function docstrings are prose-first, not strict Google-style
-`Args:`/`Returns:` blocks — explain *why*, not just restate the
+`Args:`/`Returns:` blocks. Explain *why*, not just restate the
 signature. See `vecparity/verify/parity.py`'s module docstring for the
 target style.
 

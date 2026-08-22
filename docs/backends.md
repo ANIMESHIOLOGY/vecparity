@@ -4,7 +4,7 @@ The CLI (`vecparity migrate --from ... --to ...`) reads connection details
 from environment variables rather than CLI flags, so nothing sensitive
 (passwords, API keys) ends up in shell history or process listings.
 
-Programmatic use doesn't go through this at all — construct the adapter
+Programmatic use doesn't go through this at all: construct the adapter
 class directly with your own client/connection object.
 
 ## `pgvector://<table>`
@@ -34,7 +34,7 @@ Use `PgVectorAdapter(conn, table, id_col=..., vector_col=..., metadata_col=..., 
 | `QDRANT_API_KEY` | no | Needed for Qdrant Cloud |
 
 Change tracking (`list_changed_since`) filters on a payload field, default
-`updated_at` — pass `updated_at_field=` to `QdrantAdapter` if yours differs.
+`updated_at`. Pass `updated_at_field=` to `QdrantAdapter` if yours differs.
 
 ## `pinecone://<index>`
 
@@ -45,9 +45,9 @@ Change tracking (`list_changed_since`) filters on a payload field, default
 
 Pinecone has no native change feed, so `list_changed_since` scrolls every
 id via `list()` + `fetch()` and filters on a metadata field (default
-`updated_at`) your writes maintain — the slowest adapter to backfill from,
-by design it's meant for migrating *out of* Pinecone, not as a long-lived
-sync source.
+`updated_at`) your writes maintain. It's the slowest adapter to backfill
+from, since by design it's meant for migrating *out of* Pinecone, not as
+a long-lived sync source.
 
 ## `milvus://<collection>`
 
@@ -57,11 +57,11 @@ sync source.
 
 Assumes a collection already created with a VARCHAR primary key, a
 FLOAT_VECTOR field, a JSON metadata field, and a DOUBLE `updated_at`
-field — see `MilvusAdapter`'s module docstring for the exact schema and
+field: see `MilvusAdapter`'s module docstring for the exact schema and
 index setup. The collection must be `load()`ed before use; an unloaded
 collection returns empty results rather than an error.
 
-Every read passes `consistency_level="Strong"` — Milvus defaults to
+Every read passes `consistency_level="Strong"`. Milvus defaults to
 "Bounded" consistency, where a read can briefly miss a write that just
 happened. This was caught by the adapter's own integration tests
 initially failing with exactly that symptom (upsert "succeeds" but an
@@ -75,7 +75,7 @@ immediate `get()`/`count()` sees nothing or a stale prior value).
 | `WEAVIATE_PORT` | no | Defaults to `8080` |
 | `WEAVIATE_GRPC_PORT` | no | Defaults to `50051` |
 
-Like Qdrant, Weaviate only accepts UUID object ids — `WeaviateAdapter`
+Like Qdrant, Weaviate only accepts UUID object ids. `WeaviateAdapter`
 maps arbitrary string ids to a deterministic UUID5, same as
 `QdrantAdapter`. Change tracking filters on a property (default
 `updated_at`) your writes maintain.

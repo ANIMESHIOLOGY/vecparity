@@ -1,4 +1,4 @@
-"""Incremental replication — the "live" in live migration.
+"""Incremental replication: the "live" in live migration.
 
 Polls the source adapter's `list_changed_since` cursor and replays new/
 updated records to the target in batches, so a migration can run
@@ -45,7 +45,7 @@ class SyncEngine:
 
         Returns the number of records synced this pass. Advances the
         cursor to the max `updated_at` seen, so the next call only picks
-        up new changes — this is what makes repeated calls (e.g. on a
+        up new changes. This is what makes repeated calls (e.g. on a
         polling loop) incremental rather than full re-copies.
         """
         batch: list[VectorRecord] = []
@@ -76,7 +76,7 @@ class SyncEngine:
         """Poll `run_once` until N consecutive passes sync nothing.
 
         Useful for a one-shot "catch up then stop" migration rather than
-        an indefinitely running daemon — call this right before cutover.
+        an indefinitely running daemon; call this right before cutover.
         """
         consecutive_idle = 0
         while consecutive_idle < idle_passes:

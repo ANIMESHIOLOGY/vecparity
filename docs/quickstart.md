@@ -18,8 +18,8 @@ vecparity migrate --from pgvector://docs --to qdrant://docs \
     --live --verify-parity --queries golden_queries.json --min-recall 0.95
 ```
 
-A failed parity check exits non-zero — wire it into CI or a deploy gate
-so a bad migration never silently ships.
+A failed parity check exits non-zero, so it can wire into CI or a
+deploy gate to stop a bad migration from silently shipping.
 
 `golden_queries.json` is a list of query cases:
 
@@ -32,7 +32,7 @@ so a bad migration never silently ships.
 
 Either `query_id` (searches using an existing record's vector from the
 source) or `query_vector` (an explicit vector) works. Use real user
-queries and their expected top hits for a meaningful check — random
+queries and their expected top hits for a meaningful check; random
 vectors won't tell you much about actual retrieval quality.
 
 ## Python

@@ -3,7 +3,7 @@
 Requires the `weaviate` extra: `pip install vecparity[weaviate]`.
 
 Object IDs: like Qdrant, Weaviate requires every object id to be a
-UUID — arbitrary strings are rejected. Same fix as QdrantAdapter: map
+UUID. Arbitrary strings are rejected. Same fix as QdrantAdapter: map
 VectorRecord.id to a deterministic UUID5 and keep the caller's original
 id in a property, so the public interface still accepts/returns
 arbitrary strings.
@@ -13,10 +13,10 @@ on a property (default `updated_at`) the caller maintains on writes,
 paginating via `fetch_objects(after=...)` cursor.
 
 Upsert: the v4 client's `data.insert()` fails if the id already
-exists and `data.replace()` fails if it doesn't — there's no single
+exists and `data.replace()` fails if it doesn't. There's no single
 upsert call, so this adapter checks `data.exists()` first.
 
-Score semantics: `near_vector()` returns `distance`, not similarity —
+Score semantics: `near_vector()` returns `distance`, not similarity;
 same `score = 1 - distance` conversion as ChromaAdapter, assuming a
 cosine-distance collection.
 """

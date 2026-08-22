@@ -13,15 +13,15 @@
 
 ## The Problem
 
-Every team on a managed vector database eventually wants to switch — Pinecone got expensive, you want to self-host, a competitor is faster for your workload. Today that means:
+Every team on a managed vector database eventually wants to switch: Pinecone got expensive, you want to self-host, a competitor is faster for your workload. Today that means:
 
 - Copying data over and **hoping** search quality didn't quietly get worse
 - A risky, all-at-once cutover, usually with downtime
-- No way to prove — to yourself or a client — that the new database still finds the right things
+- No way to prove, to yourself or a client, that the new database still finds the right things
 
 Existing tools stop at "the data arrived." [vector-io/VDF](https://github.com/AI-Northstar-Tech/vector-io) does batch export → import → re-embed across backends, and vendor migration guides (e.g. Qdrant's) only cover moving *into* their own product. **None of them check whether retrieval quality survived the move.**
 
-VecParity does two things nothing else does together: migrates **incrementally, without downtime**, and hands you a **parity report** — recall@k, result overlap, and score drift between old and new — before you cut over.
+VecParity does two things nothing else does together: migrates **incrementally, without downtime**, and hands you a **parity report** (recall@k, result overlap, and score drift between old and new) before you cut over.
 
 ---
 
@@ -58,7 +58,7 @@ vecparity migrate --from pgvector://docs --to qdrant://docs \
     --live --verify-parity --queries golden_queries.json --min-recall 0.95
 ```
 
-A failed parity check exits non-zero — wire it into CI or a deploy gate so a bad migration never silently ships.
+A failed parity check exits non-zero, so it can wire into CI or a deploy gate to stop a bad migration from silently shipping.
 
 ### Programmatic use
 
@@ -95,15 +95,15 @@ For each query, VecParity compares the source's and target's top-k results:
 | `jaccard_overlap` | Set overlap of the two top-k result lists |
 | `mean_score_drift` | Average similarity-score difference for ids present in both |
 
-`ParityReport.passed` gates on mean recall@k against a threshold you choose — use your own golden query set (real user queries + expected top hits) for a meaningful check, not just random vectors.
+`ParityReport.passed` gates on mean recall@k against a threshold you choose. Use your own golden query set (real user queries plus expected top hits) for a meaningful check, not just random vectors.
 
 ---
 
 ## Design principles
 
-- **Migration-time only, not a permanent ORM.** VecParity doesn't try to be a universal query API you build your app against forever — that's how abstractions like this end up leaky. Adapters implement five operations (`get`, `upsert`, `delete`, `list_changed_since`, `search`) and nothing more.
-- **Incremental by default.** `list_changed_since` + a cursor means re-running a migration only copies what changed, so it's safe to run alongside a live app.
-- **Quality, not just presence.** The whole point of this project is the parity report — everything else is plumbing to get there.
+- **Migration-time only, not a permanent ORM.** VecParity doesn't try to be a universal query API you build your app against forever; that's how abstractions like this end up leaky. Adapters implement five operations (`get`, `upsert`, `delete`, `list_changed_since`, `search`) and nothing more.
+- **Incremental by default.** `list_changed_since` plus a cursor means re-running a migration only copies what changed, so it's safe to run alongside a live app.
+- **Quality, not just presence.** The whole point of this project is the parity report; everything else is plumbing to get there.
 
 ---
 
@@ -119,7 +119,7 @@ For each query, VecParity compares the source's and target's top-k results:
 | Chroma | ✅ |
 | In-memory (testing / reference) | ✅ |
 
-Adding a backend means implementing `VectorDBAdapter` (`vecparity/adapters/base.py`) — see `adapters/memory.py` for the smallest possible reference implementation.
+Adding a backend means implementing `VectorDBAdapter` (`vecparity/adapters/base.py`); see `adapters/memory.py` for the smallest possible reference implementation.
 
 ---
 
@@ -129,7 +129,7 @@ Full docs, including per-backend connection details and design rationale, live a
 
 ## Contributing
 
-PRs, issues, and discussions are welcome — especially new backend adapters and real-world golden query sets for testing parity verification against production-shaped data. See [CONTRIBUTING.md](CONTRIBUTING.md) for dev setup, running tests, and code style.
+PRs, issues, and discussions are welcome, especially new backend adapters and real-world golden query sets for testing parity verification against production-shaped data. See [CONTRIBUTING.md](CONTRIBUTING.md) for dev setup, running tests, and code style.
 
 ## License
 

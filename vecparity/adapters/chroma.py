@@ -14,22 +14,22 @@ writes.
 
 Score semantics: Chroma's `query()` returns a distance, not a
 similarity score, and what that distance *means* depends on the
-collection's configured space (`l2`, `cosine`, `ip`) at creation time —
-this adapter assumes a cosine-space collection and converts via
+collection's configured space (`l2`, `cosine`, `ip`) at creation time.
+This adapter assumes a cosine-space collection and converts via
 `score = 1 - distance` to stay consistent with pgvector/Qdrant's score
 convention (higher = more similar). A collection created with a
 different space will produce scores that aren't directly comparable to
-other backends' scores — verify_parity()'s recall@k/overlap checks
+other backends' scores. verify_parity()'s recall@k/overlap checks
 still work regardless (they only depend on rank order and id
 membership), but mean_score_drift won't mean the same thing across a
 metric mismatch.
 
 Typing note: chromadb's own type stubs are narrower than its actual
-runtime API — `embeddings`/`where` accept plain Python lists/dicts at
+runtime API. `embeddings`/`where` accept plain Python lists/dicts at
 runtime (this is how Chroma's own docs show it), but the stubs are
 written against numpy-array and literal-key types. The `# type: ignore`
 comments below are for that stub/runtime mismatch, not unverified
-assumptions — behavior is confirmed by the integration tests actually
+assumptions; behavior is confirmed by the integration tests actually
 running against a live Chroma instance.
 """
 

@@ -68,7 +68,7 @@ jobs:
     # which GitHub Actions' native `services:` block can't express (it
     # starts every service in parallel with no depends_on support). Using
     # docker-compose.test.yml directly here also means there's exactly one
-    # place — not two divergent YAML definitions — describing how to stand
+    # place, not two divergent YAML definitions, describing how to stand
     # up the test backends, same file contributors use locally.
     steps:
       - uses: actions/checkout@v4
@@ -83,7 +83,7 @@ jobs:
       - name: Start test backends
         # Retries on a transient Docker networking race seen on shared
         # runners: "failed to bind host port ... address already in use"
-        # for a port nothing else in this job actually uses — a
+        # for a port nothing else in this job actually uses. A
         # docker-proxy port-binding flake, not a real conflict (every
         # other service in the same `up` call started fine). A clean
         # `down -v` + retry clears it.

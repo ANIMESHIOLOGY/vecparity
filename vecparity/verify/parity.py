@@ -1,17 +1,17 @@
-"""Retrieval-quality parity verification — the actual differentiator.
+"""Retrieval-quality parity verification: the actual differentiator.
 
 Existing migration tools (vector-io/VDF, vendor migration guides) confirm
 data *arrived*: row counts match, ids exist. None of them confirm the new
-database still *retrieves the same things* — which is the only thing that
+database still *retrieves the same things*, which is the only thing that
 actually matters to the app sitting on top of it.
 
 This module runs a query set against both the source and target adapters
 and compares:
 
-  - recall@k       — fraction of the source's top-k ids also in target's top-k
-  - rank overlap    — Jaccard overlap of the top-k id sets
-  - score drift      — mean absolute difference in similarity scores for
-                       ids present in both result sets
+  - recall@k:    fraction of the source's top-k ids also in target's top-k
+  - rank overlap: Jaccard overlap of the top-k id sets
+  - score drift:  mean absolute difference in similarity scores for
+                  ids present in both result sets
 
 A ParityReport aggregates these per-query results and exposes `passed`
 against caller-supplied thresholds, so it can gate a migration in CI.
@@ -59,13 +59,13 @@ class ParityReport(BaseModel):
         lines = [
             f"Parity report: {len(self.results)} queries, "
             f"mean recall@k = {self.mean_recall_at_k:.3f} "
-            f"(threshold {self.min_recall_at_k:.3f}) — "
+            f"(threshold {self.min_recall_at_k:.3f}): "
             f"{'PASS' if self.passed else 'FAIL'}"
         ]
         worst = self.worst_query
         if worst is not None and not self.passed:
             lines.append(
-                f"  worst query: {worst.label or '(unlabeled)'} — "
+                f"  worst query: {worst.label or '(unlabeled)'}: "
                 f"recall@k={worst.recall_at_k:.3f}, "
                 f"overlap={worst.jaccard_overlap:.3f}, "
                 f"score_drift={worst.mean_score_drift:.4f}"
@@ -112,7 +112,7 @@ def verify_parity(
     """Run every query against both adapters and score retrieval parity.
 
     Raises ValueError if a QueryCase references a query_id that isn't
-    found in the source — fail loud rather than silently skipping a case
+    found in the source. Fail loud rather than silently skipping a case
     the caller expected to be evaluated.
     """
     results: list[QueryResult] = []

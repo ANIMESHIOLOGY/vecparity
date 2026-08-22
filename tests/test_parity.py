@@ -1,4 +1,4 @@
-"""Parity verification tests using the in-memory adapter — no docker required.
+"""Parity verification tests using the in-memory adapter: no docker required.
 
 These validate the core differentiator (recall@k / overlap / score-drift
 math) in isolation. Adapter-specific integration tests belong in
