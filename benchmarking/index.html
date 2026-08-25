@@ -8,13 +8,13 @@
       
       
       
-        <link rel="canonical" href="https://animeshiology.github.io/vecparity/cutover/">
+        <link rel="canonical" href="https://animeshiology.github.io/vecparity/benchmarking/">
       
       
-        <link rel="prev" href="../backends/">
+        <link rel="prev" href="../cutover/">
       
       
-        <link rel="next" href="../benchmarking/">
+        <link rel="next" href="../design-principles/">
       
       
         
@@ -25,7 +25,7 @@
     
     
       
-        <title>Cutover Workflow - vecparity</title>
+        <title>Benchmarking - vecparity</title>
       
     
     
@@ -80,7 +80,7 @@
     <div data-md-component="skip">
       
         
-        <a href="#cutover-workflow" class="md-skip">
+        <a href="#benchmarking" class="md-skip">
           Skip to content
         </a>
       
@@ -113,7 +113,7 @@
         <div class="md-header__topic" data-md-component="header-topic">
           <span class="md-ellipsis">
             
-              Cutover Workflow
+              Benchmarking
             
           </span>
         </div>
@@ -300,11 +300,9 @@
   
   
   
-    
   
-  
-    <li class="md-tabs__item md-tabs__item--active">
-      <a href="./" class="md-tabs__link">
+    <li class="md-tabs__item">
+      <a href="../cutover/" class="md-tabs__link">
         
   
   
@@ -321,9 +319,11 @@
   
   
   
+    
   
-    <li class="md-tabs__item">
-      <a href="../benchmarking/" class="md-tabs__link">
+  
+    <li class="md-tabs__item md-tabs__item--active">
+      <a href="./" class="md-tabs__link">
         
   
   
@@ -533,6 +533,33 @@
       
   
   
+  
+  
+    <li class="md-nav__item">
+      <a href="../cutover/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Cutover Workflow
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+    
+      
+      
+  
+  
     
   
   
@@ -552,7 +579,7 @@
   <span class="md-ellipsis">
     
   
-    Cutover Workflow
+    Benchmarking
   
 
     
@@ -570,7 +597,7 @@
   <span class="md-ellipsis">
     
   
-    Cutover Workflow
+    Benchmarking
   
 
     
@@ -596,10 +623,10 @@
     <ul class="md-nav__list" data-md-component="toc" data-md-scrollfix>
       
         <li class="md-nav__item">
-  <a href="#status" class="md-nav__link">
+  <a href="#what-this-doesnt-tell-you" class="md-nav__link">
     <span class="md-ellipsis">
       
-        Status
+        What this doesn't tell you
       
     </span>
   </a>
@@ -607,43 +634,10 @@
 </li>
       
         <li class="md-nav__item">
-  <a href="#pause-and-resume" class="md-nav__link">
+  <a href="#a-real-run-for-context" class="md-nav__link">
     <span class="md-ellipsis">
       
-        Pause and resume
-      
-    </span>
-  </a>
-  
-</li>
-      
-        <li class="md-nav__item">
-  <a href="#cancel" class="md-nav__link">
-    <span class="md-ellipsis">
-      
-        Cancel
-      
-    </span>
-  </a>
-  
-</li>
-      
-        <li class="md-nav__item">
-  <a href="#cutover" class="md-nav__link">
-    <span class="md-ellipsis">
-      
-        Cutover
-      
-    </span>
-  </a>
-  
-</li>
-      
-        <li class="md-nav__item">
-  <a href="#rollback" class="md-nav__link">
-    <span class="md-ellipsis">
-      
-        Rollback
+        A real run, for context
       
     </span>
   </a>
@@ -654,33 +648,6 @@
   
 </nav>
       
-    </li>
-  
-
-    
-      
-      
-  
-  
-  
-  
-    <li class="md-nav__item">
-      <a href="../benchmarking/" class="md-nav__link">
-        
-  
-  
-  <span class="md-ellipsis">
-    
-  
-    Benchmarking
-  
-
-    
-  </span>
-  
-  
-
-      </a>
     </li>
   
 
@@ -905,50 +872,64 @@
   
 
 
-<h1 id="cutover-workflow">Cutover Workflow</h1>
-<p>A live migration doesn't have a single point where it's "done." Once it's
-caught up and verified, there's a defined path from there to actually
-cutting over, instead of a <code>migrate run</code> you either trust blindly or
-don't run at all.</p>
-<h2 id="status">Status</h2>
-<p>Every migration (a <code>--from</code>/<code>--to</code> pair) has a persisted operational
-status, alongside its checkpoint: <code>not_started</code>, <code>syncing</code>, <code>paused</code>,
-<code>verified</code>, <code>cut_over</code>, <code>rolled_back</code>, or <code>cancelled</code>.</p>
-<div class="highlight"><pre><span></span><code><a id="__codelineno-0-1" name="__codelineno-0-1" href="#__codelineno-0-1"></a>vecparity<span class="w"> </span>migrate<span class="w"> </span>status<span class="w"> </span>--from<span class="w"> </span>pgvector://docs<span class="w"> </span>--to<span class="w"> </span>qdrant://docs
+<h1 id="benchmarking">Benchmarking</h1>
+<div class="highlight"><pre><span></span><code><a id="__codelineno-0-1" name="__codelineno-0-1" href="#__codelineno-0-1"></a>vecparity<span class="w"> </span>benchmark<span class="w"> </span>--from<span class="w"> </span>memory://bench-source<span class="w"> </span>--to<span class="w"> </span>qdrant://mycollection<span class="w"> </span><span class="se">\</span>
+<a id="__codelineno-0-2" name="__codelineno-0-2" href="#__codelineno-0-2"></a><span class="w">    </span>--num-records<span class="w"> </span><span class="m">200000</span><span class="w"> </span>--dimension<span class="w"> </span><span class="m">128</span><span class="w"> </span>--batch-size<span class="w"> </span><span class="m">500</span>
 </code></pre></div>
-<h2 id="pause-and-resume">Pause and resume</h2>
-<div class="highlight"><pre><span></span><code><a id="__codelineno-1-1" name="__codelineno-1-1" href="#__codelineno-1-1"></a>vecparity<span class="w"> </span>migrate<span class="w"> </span>pause<span class="w"> </span>--from<span class="w"> </span>pgvector://docs<span class="w"> </span>--to<span class="w"> </span>qdrant://docs
-</code></pre></div>
-<p>This is cooperative, not a kill signal: a running <code>migrate run --live</code>
-process checks for a pause request once per poll and stops cleanly,
-checkpointing first. There's no separate daemon process to signal
-directly, so this only takes effect while a <code>--live</code> run is actually
-in progress; otherwise it just records the request until the next run.</p>
-<p>Resuming is just re-running <code>migrate run</code> (without <code>--fresh</code>); it picks
-up from the checkpoint automatically.</p>
-<h2 id="cancel">Cancel</h2>
-<div class="highlight"><pre><span></span><code><a id="__codelineno-2-1" name="__codelineno-2-1" href="#__codelineno-2-1"></a>vecparity<span class="w"> </span>migrate<span class="w"> </span>cancel<span class="w"> </span>--from<span class="w"> </span>pgvector://docs<span class="w"> </span>--to<span class="w"> </span>qdrant://docs
-</code></pre></div>
-<p>Marks the migration cancelled. The checkpoint itself isn't deleted (use
-<code>vecparity checkpoint clear</code> for that); a future <code>migrate run</code> refuses
-to resume a cancelled migration unless you pass <code>--fresh</code>.</p>
-<h2 id="cutover">Cutover</h2>
-<div class="highlight"><pre><span></span><code><a id="__codelineno-3-1" name="__codelineno-3-1" href="#__codelineno-3-1"></a>vecparity<span class="w"> </span>cutover<span class="w"> </span>--from<span class="w"> </span>pgvector://docs<span class="w"> </span>--to<span class="w"> </span>qdrant://docs<span class="w"> </span><span class="se">\</span>
-<a id="__codelineno-3-2" name="__codelineno-3-2" href="#__codelineno-3-2"></a><span class="w">    </span>--queries<span class="w"> </span>golden_queries.json<span class="w"> </span>--min-recall<span class="w"> </span><span class="m">0</span>.95
-</code></pre></div>
-<p>Runs one final sync pass to close any last gap, then a final parity
-check. The migration is only marked <code>cut_over</code> if that check passes; if
-it fails, the command exits non-zero and the migration's status is left
-as-is.</p>
-<h2 id="rollback">Rollback</h2>
-<div class="highlight"><pre><span></span><code><a id="__codelineno-4-1" name="__codelineno-4-1" href="#__codelineno-4-1"></a>vecparity<span class="w"> </span>rollback<span class="w"> </span>--from<span class="w"> </span>pgvector://docs<span class="w"> </span>--to<span class="w"> </span>qdrant://docs
-</code></pre></div>
-<p>Marks a cut-over migration rolled back.</p>
-<p><strong>What this doesn't do:</strong> vecparity has no way to redirect your
-application's traffic, and <code>rollback</code> doesn't sync data back to the
-source, it isn't a two-way replication tool. Both commands track state
-and give you evidence, a real final parity check, for a decision you
-still make and act on yourself.</p>
+<p><code>vecparity benchmark</code> seeds synthetic vectors into <code>--from</code>, then times a
+real <code>SyncEngine</code> run into <code>--to</code>, reporting throughput, batch count, and
+peak memory during the sync. Only the sync itself is timed; seeding is
+reported separately since it isn't part of what a real migration measures.</p>
+<p>By default it seeds an in-memory source and syncs into an in-memory
+target, useful for exercising the harness itself. Point <code>--to</code> (or
+<code>--from</code>) at a real backend to measure something meaningful; the target
+collection/table needs to already exist with a matching dimension.</p>
+<h2 id="what-this-doesnt-tell-you">What this doesn't tell you</h2>
+<p>This is a synthetic, single-machine benchmark, not a substitute for
+testing at your actual data scale on your actual infrastructure. A
+number from a laptop against a single local Docker container and a
+number from a production migration between two managed services in the
+same region are not comparable. Treat this as a tool for producing your
+own numbers under your own conditions, not a source of numbers to quote.</p>
+<p>It also doesn't count individual backend API calls, only sync batches
+(<code>SyncEngine.stats.batches</code>, one <code>upsert()</code> call per batch). Getting an
+exact network-call count would mean instrumenting six different SDKs
+individually; the batch count is a reasonable proxy without that cost.</p>
+<h2 id="a-real-run-for-context">A real run, for context</h2>
+<p>One data point, not a benchmark claim: 200,000 synthetic 128-dimension
+vectors, in-memory source, target a single local Docker Qdrant
+container (<code>qdrant/qdrant:latest</code>) over localhost, <code>--batch-size 500</code>.</p>
+<table>
+<thead>
+<tr>
+<th></th>
+<th></th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>Machine</td>
+<td>13th Gen Intel Core i5-1335U, 15.7 GB RAM</td>
+</tr>
+<tr>
+<td>Sync time</td>
+<td>98.5s</td>
+</tr>
+<tr>
+<td>Throughput</td>
+<td>~2,030 records/sec</td>
+</tr>
+<tr>
+<td>Batches</td>
+<td>400</td>
+</tr>
+<tr>
+<td>Peak memory during sync</td>
+<td>462.6 MB</td>
+</tr>
+</tbody>
+</table>
+<p>Re-run it yourself before trusting a number for anything that matters.</p>
 
 
 
@@ -969,7 +950,7 @@ still make and act on yourself.</p>
     <span class="md-icon" title="Last update">
       <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M21 13.1c-.1 0-.3.1-.4.2l-1 1 2.1 2.1 1-1c.2-.2.2-.6 0-.8l-1.3-1.3c-.1-.1-.2-.2-.4-.2m-1.9 1.8-6.1 6V23h2.1l6.1-6.1zM12.5 7v5.2l4 2.4-1 1L11 13V7zM11 21.9c-5.1-.5-9-4.8-9-9.9C2 6.5 6.5 2 12 2c5.3 0 9.6 4.1 10 9.3-.3-.1-.6-.2-1-.2s-.7.1-1 .2C19.6 7.2 16.2 4 12 4c-4.4 0-8 3.6-8 8 0 4.1 3.1 7.5 7.1 7.9l-.1.2z"/></svg>
     </span>
-    <span class="git-revision-date-localized-plugin git-revision-date-localized-plugin-date" title="August 25, 2026 17:58:32 UTC">August 25, 2026</span>
+    <span class="git-revision-date-localized-plugin git-revision-date-localized-plugin-date" title="August 25, 2026 19:12:31 UTC">August 25, 2026</span>
   </span>
 
     
@@ -1005,7 +986,7 @@ still make and act on yourself.</p>
       <nav class="md-footer__inner md-grid" aria-label="Footer" >
         
           
-          <a href="../backends/" class="md-footer__link md-footer__link--prev" aria-label="Previous: Backends">
+          <a href="../cutover/" class="md-footer__link md-footer__link--prev" aria-label="Previous: Cutover Workflow">
             <div class="md-footer__button md-icon">
               
               <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M20 11v2H8l5.5 5.5-1.42 1.42L4.16 12l7.92-7.92L13.5 5.5 8 11z"/></svg>
@@ -1015,20 +996,20 @@ still make and act on yourself.</p>
                 Previous
               </span>
               <div class="md-ellipsis">
-                Backends
+                Cutover Workflow
               </div>
             </div>
           </a>
         
         
           
-          <a href="../benchmarking/" class="md-footer__link md-footer__link--next" aria-label="Next: Benchmarking">
+          <a href="../design-principles/" class="md-footer__link md-footer__link--next" aria-label="Next: Design Principles">
             <div class="md-footer__title">
               <span class="md-footer__direction">
                 Next
               </span>
               <div class="md-ellipsis">
-                Benchmarking
+                Design Principles
               </div>
             </div>
             <div class="md-footer__button md-icon">
