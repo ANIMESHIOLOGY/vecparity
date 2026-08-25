@@ -16,8 +16,9 @@ from rich.table import Table
 
 from vecparity.adapters.base import VectorDBAdapter
 from vecparity.checkpoint import DEFAULT_CHECKPOINT_PATH, CheckpointStore
+from vecparity.schema import compare_schemas, inspect_adapter
 from vecparity.sync.engine import SyncEngine
-from vecparity.types import QueryCase
+from vecparity.types import QueryCase, VectorRecord
 from vecparity.verify.parity import verify_parity
 
 app = typer.Typer(add_completion=False, help="Live, quality-verified vector DB migration.")
@@ -150,6 +151,76 @@ def checkpoint_clear(
     store = CheckpointStore(checkpoint_file)
     store.delete(_migration_id(from_, to))
     console.print("Checkpoint cleared.")
+
+
+@app.command()
+def plan(
+    from_: str = typer.Option(..., "--from", help="source, e.g. pgvector://docs"),
+    to: str = typer.Option(..., "--to", help="target, e.g. qdrant://docs"),
+    sample_size: int = typer.Option(
+        100, "--sample-size", help="records sampled from each side to infer shape"
+    ),
+) -> None:
+    """Compare source and target shape before touching any data: vector
+    dimension, metadata field types, and whether the target is already
+    populated. Exits non-zero if it finds a migration-blocking issue."""
+    source = _load_adapter(from_)
+    target = _load_adapter(to)
+
+    console.print("Sampling source and target...")
+    source_schema = inspect_adapter(source, sample_size=sample_size)
+    target_schema = inspect_adapter(target, sample_size=sample_size)
+    report = compare_schemas(source_schema, target_schema)
+
+    console.print(report.summary())
+    if report.blocking:
+        sys.exit(1)
+
+
+@app.command()
+def validate(
+    from_: str = typer.Option(..., "--from", help="source, e.g. pgvector://docs"),
+    to: str = typer.Option(..., "--to", help="target, e.g. qdrant://docs"),
+) -> None:
+    """Pre-flight check: connectivity to both sides, and a real write
+    probe against the target (not just "the client object connected"),
+    since only an actual write proves the credentials can write."""
+    ok = True
+
+    console.print("Connecting to source...")
+    try:
+        source = _load_adapter(from_)
+        source.count()
+        console.print("[green]OK[/green] source reachable.")
+    except Exception as e:
+        console.print(f"[red]FAIL[/red] source: {e}")
+        raise typer.Exit(1) from e
+
+    console.print("Connecting to target...")
+    try:
+        target = _load_adapter(to)
+        target.count()
+        console.print("[green]OK[/green] target reachable.")
+    except Exception as e:
+        console.print(f"[red]FAIL[/red] target: {e}")
+        raise typer.Exit(1) from e
+
+    console.print("Checking target write permission...")
+    dimension = inspect_adapter(source, sample_size=1).dimension
+    if dimension is None:
+        console.print("[yellow]SKIPPED[/yellow] source is empty, can't infer a probe dimension.")
+    else:
+        probe_id = "__vecparity_validate_probe__"
+        try:
+            target.upsert([VectorRecord(id=probe_id, vector=[0.0] * dimension)])
+            target.delete([probe_id])
+            console.print("[green]OK[/green] target accepts writes.")
+        except Exception as e:
+            console.print(f"[red]FAIL[/red] target write check: {e}")
+            ok = False
+
+    if not ok:
+        sys.exit(1)
 
 
 @app.command()

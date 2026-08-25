@@ -62,6 +62,13 @@ pip install "vecparity[all]"
 export PGVECTOR_DSN="postgresql://localhost/mydb"
 export QDRANT_URL="http://localhost:6333"
 
+# Check the two sides are compatible before touching any data:
+# vector dimension, metadata field types, whether the target is already populated
+vecparity plan --from pgvector://docs --to qdrant://docs
+
+# Pre-flight: connectivity to both sides, and a real write probe against the target
+vecparity validate --from pgvector://docs --to qdrant://docs
+
 # One-shot migration
 vecparity migrate --from pgvector://docs --to qdrant://docs
 
@@ -74,7 +81,9 @@ vecparity migrate --from pgvector://docs --to qdrant://docs \
     --live --verify-parity --queries golden_queries.json --min-recall 0.95
 ```
 
-A failed parity check exits non-zero, so it can wire into CI or a deploy gate to stop a bad migration from silently shipping.
+A migration in progress checkpoints its cursor to `~/.vecparity/checkpoints.db`, so a crashed or interrupted `--live` run resumes from where it left off instead of starting over. `vecparity checkpoint show`/`clear` inspect or discard that state.
+
+A failed parity or compatibility check exits non-zero, so any of these can wire into CI or a deploy gate to stop a bad migration from silently shipping.
 
 ### Programmatic Use
 

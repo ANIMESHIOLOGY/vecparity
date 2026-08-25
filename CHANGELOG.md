@@ -2,6 +2,10 @@
 
 ## Unreleased
 
+- Added schema inspection: `inspect_adapter()` samples a collection through the existing `list_changed_since`/`count` protocol (no new adapter methods) to infer vector dimension and metadata field types. `compare_schemas()` turns two of these into a `CompatibilityReport`, flagging a dimension mismatch as blocking and metadata type drift or a non-empty target as warnings.
+- New `vecparity plan --from ... --to ...` prints that compatibility report and exits non-zero on a blocking issue, before any data moves.
+- New `vecparity validate --from ... --to ...` checks connectivity to both sides, then proves target write access with a real probe upsert/delete (dimension-matched to the source) rather than just checking the client object connected.
+
 - Added durable migration checkpoints: `SyncEngine.checkpoint()` / `SyncEngine.from_checkpoint()` snapshot and restore full sync state (cursor, both boundary-id sets, and progress counters), backed by a new `CheckpointStore` (SQLite, default `~/.vecparity/checkpoints.db`). `vecparity migrate` now saves a checkpoint after every batch and resumes from it automatically on the next run for the same `--from`/`--to` pair, unless `--fresh` is passed. Restoring the boundary-id sets (not just the raw cursor) matters: without them, a crash-and-resume right at a timestamp tie would reintroduce the exact tie-bug that was just fixed.
 - New `vecparity checkpoint show` / `vecparity checkpoint clear` commands to inspect or discard saved migration state.
 
