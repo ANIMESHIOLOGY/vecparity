@@ -76,10 +76,18 @@ class ChromaAdapter(VectorDBAdapter):
                 break
             offset += len(ids)
 
-    def search(self, vector: list[float], top_k: int) -> list[ScoredMatch]:
+    def search(
+        self, vector: list[float], top_k: int, filter: dict[str, Any] | None = None
+    ) -> list[ScoredMatch]:
+        # Chroma rejects a flat multi-key where-dict ("exactly one
+        # operator" error); needs an explicit $and for more than one key.
+        where = None
+        if filter is not None:
+            where = filter if len(filter) == 1 else {"$and": [{k: v} for k, v in filter.items()]}
         result = self.collection.query(
             query_embeddings=[vector],  # type: ignore[arg-type]
             n_results=top_k,
+            where=where,  # type: ignore[arg-type]
             include=["distances", "metadatas"],
         )
         raw_ids = result["ids"][0]

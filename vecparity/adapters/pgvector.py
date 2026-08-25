@@ -105,19 +105,30 @@ class PgVectorAdapter(VectorDBAdapter):
             for row in cur:
                 yield self._to_record(row)
 
-    def search(self, vector: list[float], top_k: int) -> list[ScoredMatch]:
+    def search(
+        self, vector: list[float], top_k: int, filter: dict[str, Any] | None = None
+    ) -> list[ScoredMatch]:
         # Needs an explicit ::vector cast; Postgres can't infer the type
         # for a bare query parameter the way it can for an INSERT column.
+        # The filter, if given, is a JSONB containment check: metadata
+        # must contain every key/value in it, an implicit AND.
+        where_clause = f"WHERE {self.metadata_col} @> %s::jsonb" if filter is not None else ""
+        params: tuple[Any, ...] = (vector,)
+        if filter is not None:
+            params += (json.dumps(filter),)
+        params += (vector, top_k)
+
         with self.conn.cursor() as cur:
             cur.execute(
                 f"""
                 SELECT {self.id_col}, {self.metadata_col},
                        1 - ({self.vector_col} {self.distance_op} %s::vector) AS score
                 FROM {self.table}
+                {where_clause}
                 ORDER BY {self.vector_col} {self.distance_op} %s::vector
                 LIMIT %s
                 """,
-                (vector, vector, top_k),
+                params,
             )
             rows = cur.fetchall()
         return [ScoredMatch(id=row[0], score=float(row[2]), metadata=row[1] or {}) for row in rows]

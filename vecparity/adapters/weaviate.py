@@ -10,6 +10,8 @@ from __future__ import annotations
 
 import uuid
 from collections.abc import Iterator
+from functools import reduce
+from typing import Any
 
 from vecparity.adapters.base import VectorDBAdapter
 from vecparity.types import ScoredMatch, VectorRecord
@@ -87,9 +89,16 @@ class WeaviateAdapter(VectorDBAdapter):
                 break
             after = objects[-1].uuid
 
-    def search(self, vector: list[float], top_k: int) -> list[ScoredMatch]:
+    def search(
+        self, vector: list[float], top_k: int, filter: dict[str, Any] | None = None
+    ) -> list[ScoredMatch]:
+        filters = None
+        if filter is not None:
+            conditions = [wvc.query.Filter.by_property(k).equal(v) for k, v in filter.items()]
+            filters = reduce(lambda a, b: a & b, conditions)
         result = self.collection.query.near_vector(
             near_vector=vector,
+            filters=filters,
             limit=top_k,
             return_metadata=wvc.query.MetadataQuery(distance=True),
         )

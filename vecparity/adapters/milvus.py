@@ -14,6 +14,7 @@ consistency, where a read can briefly miss a write that just happened.
 
 from __future__ import annotations
 
+import json
 from collections.abc import Iterator
 from typing import Any
 
@@ -94,10 +95,22 @@ class MilvusAdapter(VectorDBAdapter):
                 break
             offset += len(rows)
 
-    def search(self, vector: list[float], top_k: int) -> list[ScoredMatch]:
+    def search(
+        self, vector: list[float], top_k: int, filter: dict[str, Any] | None = None
+    ) -> list[ScoredMatch]:
+        # metadata_field is a JSON column; bracket notation reaches into it
+        # for equality on a nested key.
+        filter_expr = (
+            " && ".join(
+                f'{self.metadata_field}["{k}"] == {json.dumps(v)}' for k, v in filter.items()
+            )
+            if filter is not None
+            else ""
+        )
         results = self.client.search(
             self.collection_name,
             data=[vector],
+            filter=filter_expr,
             limit=top_k,
             output_fields=[self.id_field, self.metadata_field],
             consistency_level="Strong",

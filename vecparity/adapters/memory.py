@@ -4,6 +4,7 @@ from __future__ import annotations
 
 import time
 from collections.abc import Iterator
+from typing import Any
 
 import numpy as np
 
@@ -43,13 +44,17 @@ class MemoryAdapter(VectorDBAdapter):
             if cursor is None or deleted_at >= cursor:
                 yield id, deleted_at
 
-    def search(self, vector: list[float], top_k: int) -> list[ScoredMatch]:
+    def search(
+        self, vector: list[float], top_k: int, filter: dict[str, Any] | None = None
+    ) -> list[ScoredMatch]:
         if not self._store:
             return []
         q = np.asarray(vector, dtype=np.float32)
         q_norm = q / (np.linalg.norm(q) + 1e-12)
         scored: list[ScoredMatch] = []
         for r in self._store.values():
+            if filter is not None and any(r.metadata.get(k) != v for k, v in filter.items()):
+                continue
             v = r.as_array()
             v_norm = v / (np.linalg.norm(v) + 1e-12)
             score = float(np.dot(q_norm, v_norm))
