@@ -76,6 +76,7 @@ nav:
   - Installation: installation.md
   - Quick Start: quickstart.md
   - Backends: backends.md
+  - Cutover Workflow: cutover.md
   - Design Principles: design-principles.md
   - API Reference:
       - adapters: api-reference/adapters.md

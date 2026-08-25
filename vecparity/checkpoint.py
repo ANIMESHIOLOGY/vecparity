@@ -13,6 +13,19 @@ from pathlib import Path
 
 DEFAULT_CHECKPOINT_PATH = Path.home() / ".vecparity" / "checkpoints.db"
 
+# Operational states a migration moves through. Deliberately just a status
+# label plus verification/cutover bookkeeping, not literal control over
+# application traffic or reverse data sync, since vecparity has no way to
+# do either; `cutover`/`rollback` are honest about that.
+STATUS_NOT_STARTED = "not_started"
+STATUS_SYNCING = "syncing"
+STATUS_PAUSE_REQUESTED = "pause_requested"
+STATUS_PAUSED = "paused"
+STATUS_CANCELLED = "cancelled"
+STATUS_VERIFIED = "verified"
+STATUS_CUT_OVER = "cut_over"
+STATUS_ROLLED_BACK = "rolled_back"
+
 _SCHEMA = """
 CREATE TABLE IF NOT EXISTS checkpoints (
     migration_id TEXT PRIMARY KEY,
@@ -23,7 +36,9 @@ CREATE TABLE IF NOT EXISTS checkpoints (
     deleted_cursor_ids TEXT NOT NULL DEFAULT '[]',
     records_synced INTEGER NOT NULL DEFAULT 0,
     records_deleted INTEGER NOT NULL DEFAULT 0,
-    last_batch_at REAL
+    last_batch_at REAL,
+    status TEXT NOT NULL DEFAULT 'not_started',
+    last_verify_passed INTEGER
 )
 """
 
@@ -39,6 +54,8 @@ class MigrationCheckpoint:
     records_synced: int = 0
     records_deleted: int = 0
     last_batch_at: float | None = None
+    status: str = STATUS_NOT_STARTED
+    last_verify_passed: bool | None = None
 
 
 class CheckpointStore:
@@ -54,7 +71,8 @@ class CheckpointStore:
     def load(self, migration_id: str) -> MigrationCheckpoint | None:
         row = self._conn.execute(
             "SELECT migration_id, source, target, cursor, cursor_ids, "
-            "deleted_cursor_ids, records_synced, records_deleted, last_batch_at "
+            "deleted_cursor_ids, records_synced, records_deleted, last_batch_at, "
+            "status, last_verify_passed "
             "FROM checkpoints WHERE migration_id = ?",
             (migration_id,),
         ).fetchone()
@@ -70,6 +88,8 @@ class CheckpointStore:
             records_synced=row[6],
             records_deleted=row[7],
             last_batch_at=row[8],
+            status=row[9],
+            last_verify_passed=None if row[10] is None else bool(row[10]),
         )
 
     def save(self, checkpoint: MigrationCheckpoint) -> None:
@@ -78,15 +98,18 @@ class CheckpointStore:
             """
             INSERT INTO checkpoints
                 (migration_id, source, target, cursor, cursor_ids,
-                 deleted_cursor_ids, records_synced, records_deleted, last_batch_at)
-            VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?)
+                 deleted_cursor_ids, records_synced, records_deleted, last_batch_at,
+                 status, last_verify_passed)
+            VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
             ON CONFLICT(migration_id) DO UPDATE SET
                 cursor = excluded.cursor,
                 cursor_ids = excluded.cursor_ids,
                 deleted_cursor_ids = excluded.deleted_cursor_ids,
                 records_synced = excluded.records_synced,
                 records_deleted = excluded.records_deleted,
-                last_batch_at = excluded.last_batch_at
+                last_batch_at = excluded.last_batch_at,
+                status = excluded.status,
+                last_verify_passed = excluded.last_verify_passed
             """,
             (
                 checkpoint.migration_id,
@@ -98,6 +121,12 @@ class CheckpointStore:
                 checkpoint.records_synced,
                 checkpoint.records_deleted,
                 checkpoint.last_batch_at,
+                checkpoint.status,
+                (
+                    None
+                    if checkpoint.last_verify_passed is None
+                    else int(checkpoint.last_verify_passed)
+                ),
             ),
         )
         self._conn.commit()

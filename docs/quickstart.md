@@ -7,19 +7,21 @@ export PGVECTOR_DSN="postgresql://localhost/mydb"
 export QDRANT_URL="http://localhost:6333"
 
 # One-shot migration
-vecparity migrate --from pgvector://docs --to qdrant://docs
+vecparity migrate run --from pgvector://docs --to qdrant://docs
 
 # Live migration: keeps polling for changes until caught up, so your
 # app can keep writing to the source the whole time
-vecparity migrate --from pgvector://docs --to qdrant://docs --live
+vecparity migrate run --from pgvector://docs --to qdrant://docs --live
 
 # Migrate AND verify retrieval quality survived, gated on a query set
-vecparity migrate --from pgvector://docs --to qdrant://docs \
+vecparity migrate run --from pgvector://docs --to qdrant://docs \
     --live --verify-parity --queries golden_queries.json --min-recall 0.95
 ```
 
 A failed parity check exits non-zero, so it can wire into CI or a
 deploy gate to stop a bad migration from silently shipping.
+
+Once a live migration is caught up and verified, `vecparity migrate status/pause/cancel` and `vecparity cutover`/`rollback` give a defined path to actually cutting over; see [cutover.md](cutover.md).
 
 `golden_queries.json` is a list of query cases:
 

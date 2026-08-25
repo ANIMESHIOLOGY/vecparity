@@ -161,3 +161,25 @@ def test_retry_recovers_from_transient_failure():
     assert synced == 1
     assert target.count() == 1
     assert engine.stats.records_quarantined == 0
+
+
+def test_run_until_caught_up_stops_early_when_should_stop_fires():
+    source, target = MemoryAdapter(), MemoryAdapter()
+    source.upsert([VectorRecord(id=f"d{i}", vector=[float(i)]) for i in range(3)])
+
+    calls = {"on_batch": 0, "should_stop": 0}
+
+    def on_batch() -> None:
+        calls["on_batch"] += 1
+
+    def should_stop() -> bool:
+        calls["should_stop"] += 1
+        return True  # stop after the very first pass
+
+    engine = SyncEngine(source, target)
+    engine.run_until_caught_up(poll_interval=0, on_batch=on_batch, should_stop=should_stop)
+
+    # Stopped after one pass, not the two idle passes it would otherwise take.
+    assert calls["on_batch"] == 1
+    assert calls["should_stop"] == 1
+    assert target.count() == 3  # the one pass that did run still synced everything

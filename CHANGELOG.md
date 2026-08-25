@@ -2,6 +2,16 @@
 
 ## Unreleased
 
+- **Breaking:** `vecparity migrate --from ... --to ...` is now `vecparity migrate run --from ... --to ...`. `migrate` became a command group so it could gain `status`, `pause`, and `cancel` alongside `run`.
+- Added an operational status to every migration, persisted alongside its checkpoint: `not_started`, `syncing`, `paused`, `verified`, `cut_over`, `rolled_back`, or `cancelled`.
+  - `vecparity migrate status` shows it, plus cursor and progress.
+  - `vecparity migrate pause` asks a running `migrate run --live` to stop cleanly at its next poll (cooperative, checked once per pass; there's no daemon to signal directly). `migrate run` (no `--fresh`) resumes it from the checkpoint.
+  - `vecparity migrate cancel` marks a migration cancelled; a future `migrate run` refuses to resume it without `--fresh`.
+  - `vecparity cutover` runs one final sync pass and a final parity check, and only marks the migration cut over if it passes.
+  - `vecparity rollback` marks a cut-over migration rolled back.
+  - `cutover`/`rollback` are deliberately honest about what vecparity can't do: it has no way to redirect application traffic and doesn't sync data back to the source. They track state and give you a fresh parity check to decide on, not an automated switchover.
+- `SyncEngine.run_until_caught_up()` gained an optional `should_stop` callback, checked after every pass, which is what makes cooperative pause/cancel possible.
+
 - Added filter-aware parity checks: `search()` now takes an optional `filter` (equality-only metadata filter, an implicit AND across keys), implemented across all six real backends plus the in-memory adapter. `QueryCase.filter` lets `verify_parity()` replay a golden query's real filter against both source and target, instead of only ever checking plain unfiltered similarity, which could miss a gap that only shows up on a filtered query path. Deliberately narrow scope, on purpose: equality only, no cross-backend query DSL, no sparse/hybrid search yet (backend support for that varies too widely to build generically without a concrete need driving it).
 
 - Added schema inspection: `inspect_adapter()` samples a collection through the existing `list_changed_since`/`count` protocol (no new adapter methods) to infer vector dimension and metadata field types. `compare_schemas()` turns two of these into a `CompatibilityReport`, flagging a dimension mismatch as blocking and metadata type drift or a non-empty target as warnings.
