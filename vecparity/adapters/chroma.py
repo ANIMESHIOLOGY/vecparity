@@ -55,7 +55,7 @@ class ChromaAdapter(VectorDBAdapter):
         self.collection.delete(ids=ids)
 
     def list_changed_since(self, cursor: float | None) -> Iterator[VectorRecord]:
-        where = {self.updated_at_field: {"$gt": cursor}} if cursor is not None else None
+        where = {self.updated_at_field: {"$gte": cursor}} if cursor is not None else None
         offset = 0
         while True:
             result = self.collection.get(

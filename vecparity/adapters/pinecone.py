@@ -93,7 +93,7 @@ class PineconeAdapter(VectorDBAdapter):
         vectors = result.vectors if hasattr(result, "vectors") else result.get("vectors", {})
         for id, v in vectors.items():
             record = self._to_record(id, v)
-            if cursor is None or (record.updated_at or 0) > cursor:
+            if cursor is None or (record.updated_at or 0) >= cursor:
                 yield record
 
     def _to_record(self, id: str, v: Any) -> VectorRecord:

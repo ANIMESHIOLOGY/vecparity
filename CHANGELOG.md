@@ -1,5 +1,14 @@
 # Changelog
 
+## Unreleased
+
+- Fixed a cursor tie-bug in `list_changed_since`: all six adapters (plus the in-memory reference adapter) switched from a strict `>` comparison to inclusive `>=`. A record sharing its timestamp with the last-seen cursor value, written after that boundary was set, was being silently skipped forever. `SyncEngine` now tracks per-boundary ids it's already synced, so the re-fetched boundary records from the inclusive query aren't reprocessed either.
+- Added delete propagation: `VectorDBAdapter.list_deleted_since(cursor)` is a new optional method (default: untracked, not an error) that yields `(id, deleted_at)` pairs; `SyncEngine` calls it alongside `list_changed_since` and mirrors deletes to the target, using the same tie-safe boundary tracking. Implemented as a tombstone table for the in-memory adapter as a reference; the six real-backend adapters don't implement it yet.
+- Strengthened the parity gate: `ParityReport` now exposes `p50_recall`, `p95_recall`, `min_recall`, and `queries_below_threshold_pct`. `verify_parity()` takes an optional `min_per_query_recall` floor so one query at 0% recall can't hide inside a passing mean.
+- Added retry with exponential backoff around `SyncEngine`'s target upserts, and per-record quarantine (`--quarantine-file`) for anything that still fails after retries, so one bad record no longer kills the whole migration.
+- `vecparity migrate` gained `--min-per-query-recall` and `--quarantine-file` flags, and now reports delete/quarantine counts after a run.
+- Verified against real infrastructure: 13 unit tests plus 32 integration tests against real Qdrant, Weaviate, Chroma, and Milvus containers, all passing. pgvector's integration test couldn't run locally (a Windows Application Control policy blocks psycopg's binary DLL on this machine); its fix is a one-character SQL change (`>` to `>=`) in a query already covered by the existing integration test.
+
 ## v0.1.0 - Initial release
 
 - Core types (`VectorRecord`, `ScoredMatch`, `QueryCase`)

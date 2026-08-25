@@ -75,7 +75,7 @@ class MilvusAdapter(VectorDBAdapter):
         self.client.delete(self.collection_name, ids=ids)
 
     def list_changed_since(self, cursor: float | None) -> Iterator[VectorRecord]:
-        filter_expr = f"{self.updated_at_field} > {cursor}" if cursor is not None else ""
+        filter_expr = f"{self.updated_at_field} >= {cursor}" if cursor is not None else ""
         offset = 0
         while True:
             rows = self.client.query(

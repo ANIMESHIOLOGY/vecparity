@@ -99,7 +99,7 @@ class PgVectorAdapter(VectorDBAdapter):
                 cur.execute(
                     f"SELECT {self.id_col}, {self.vector_col}, {self.metadata_col}, "
                     f"{self.updated_at_col} FROM {self.table} "
-                    f"WHERE {self.updated_at_col} > %s ORDER BY {self.updated_at_col}",
+                    f"WHERE {self.updated_at_col} >= %s ORDER BY {self.updated_at_col}",
                     (cursor,),
                 )
             for row in cur:

@@ -69,7 +69,7 @@ class WeaviateAdapter(VectorDBAdapter):
     def list_changed_since(self, cursor: float | None) -> Iterator[VectorRecord]:
         filters = None
         if cursor is not None:
-            filters = wvc.query.Filter.by_property(self.updated_at_field).greater_than(cursor)
+            filters = wvc.query.Filter.by_property(self.updated_at_field).greater_or_equal(cursor)
         after = None
         while True:
             result = self.collection.query.fetch_objects(
