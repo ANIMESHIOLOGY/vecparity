@@ -15,6 +15,7 @@ from rich.console import Console
 from rich.table import Table
 
 from vecparity.adapters.base import VectorDBAdapter
+from vecparity.benchmark import run_benchmark
 from vecparity.checkpoint import (
     DEFAULT_CHECKPOINT_PATH,
     STATUS_CANCELLED,
@@ -26,6 +27,7 @@ from vecparity.checkpoint import (
     STATUS_VERIFIED,
     CheckpointStore,
 )
+from vecparity.report import report_to_html, report_to_json
 from vecparity.schema import compare_schemas, inspect_adapter
 from vecparity.sync.engine import SyncEngine
 from vecparity.types import QueryCase, VectorRecord
@@ -458,6 +460,14 @@ def cutover(
         help="also require every individual query to clear this floor",
     ),
     checkpoint_file: Path = typer.Option(DEFAULT_CHECKPOINT_PATH, "--checkpoint-file"),
+    report_json: Path | None = typer.Option(
+        None, "--report-json", help="write a JSON report combining migration state and parity"
+    ),
+    report_html: Path | None = typer.Option(
+        None,
+        "--report-html",
+        help="write a self-contained HTML report, same content as --report-json",
+    ),
 ) -> None:
     """Run one final sync pass and a final parity check; mark the
     migration cut over only if it passes.
@@ -508,6 +518,15 @@ def cutover(
         cp.status = STATUS_SYNCING
         cp.last_verify_passed = False
         store.save(cp)
+
+    if report_json is not None:
+        report_json.write_text(report_to_json(cp, report))
+        console.print(f"Wrote {report_json}")
+    if report_html is not None:
+        report_html.write_text(report_to_html(cp, report))
+        console.print(f"Wrote {report_html}")
+
+    if not report.passed:
         console.print("[bold red]Cutover aborted: parity check failed.[/bold red]")
         sys.exit(1)
 
@@ -538,6 +557,38 @@ def rollback(
         "yourself. The target's data as of cutover is still there for inspection, "
         "but should no longer be treated as the source of truth."
     )
+
+
+@app.command()
+def benchmark(
+    from_: str = typer.Option(
+        "memory://bench-source", "--from", help="source adapter to seed and sync from"
+    ),
+    to: str = typer.Option("memory://bench-target", "--to", help="target adapter to sync into"),
+    num_records: int = typer.Option(
+        100_000, "--num-records", help="synthetic vectors to seed and sync"
+    ),
+    dimension: int = typer.Option(128, "--dimension", help="vector dimension"),
+    batch_size: int = typer.Option(500, "--batch-size", help="SyncEngine batch size"),
+) -> None:
+    """Seed synthetic vectors into `--from` and time a real sync into
+    `--to`. Numbers are only as good as the machine and backends you run
+    this against; they aren't a substitute for testing at your actual
+    scale on your actual infrastructure.
+    """
+    source = _load_adapter(from_)
+    target = _load_adapter(to)
+
+    console.print(f"Seeding {num_records} synthetic {dimension}-dim vectors into {from_}...")
+    result = run_benchmark(
+        source, target, num_records=num_records, dimension=dimension, batch_size=batch_size
+    )
+
+    console.print(f"Seed time: {result.seed_seconds:.2f}s")
+    console.print(f"Sync time: {result.sync_seconds:.2f}s")
+    console.print(f"Throughput: {result.records_per_second:.0f} records/sec")
+    console.print(f"Batches: {result.sync_batches}")
+    console.print(f"Peak memory during sync: {result.peak_memory_mb:.1f} MB")
 
 
 if __name__ == "__main__":

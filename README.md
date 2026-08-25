@@ -102,15 +102,26 @@ vecparity migrate pause --from pgvector://docs --to qdrant://docs
 vecparity migrate cancel --from pgvector://docs --to qdrant://docs
 
 # Final sync pass + final parity check; only marks the migration cut
-# over if it passes
+# over if it passes. --report-json/--report-html write a combined
+# migration + parity report, a self-contained HTML page or JSON.
 vecparity cutover --from pgvector://docs --to qdrant://docs \
-    --queries golden_queries.json --min-recall 0.95
+    --queries golden_queries.json --min-recall 0.95 \
+    --report-html cutover_report.html
 
 # Record that a cut-over migration was rolled back
 vecparity rollback --from pgvector://docs --to qdrant://docs
 ```
 
 Worth being precise about what this does and doesn't do: vecparity has no way to redirect your application's traffic, and `rollback` doesn't sync data back to the source, it isn't a two-way replication tool. `cutover`/`rollback` track migration state and give you evidence (a fresh final parity check) for a decision you still make and act on yourself.
+
+### Benchmarking
+
+```bash
+vecparity benchmark --from memory://bench-source --to qdrant://mycollection \
+    --num-records 200000 --dimension 128
+```
+
+Seeds synthetic vectors and times a real sync, reporting throughput, batch count, and peak memory. This measures whatever machine and backend you point it at, not a universal number; see [Benchmarking](https://animeshiology.github.io/vecparity/benchmarking/) for methodology and one real data point.
 
 ### Programmatic Use
 
