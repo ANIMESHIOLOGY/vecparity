@@ -127,12 +127,20 @@ def migrate(
         None, "--queries", help="JSON file of query cases for --verify-parity"
     ),
     min_recall: float = typer.Option(0.9, "--min-recall", help="parity pass threshold"),
+    min_per_query_recall: float | None = typer.Option(
+        None,
+        "--min-per-query-recall",
+        help="also require every individual query to clear this floor, not just the mean",
+    ),
+    quarantine_file: Path | None = typer.Option(
+        None, "--quarantine-file", help="where records that fail every retry get logged"
+    ),
 ) -> None:
     """Sync `--from` into `--to`, optionally verifying retrieval parity."""
     source = _load_adapter(from_)
     target = _load_adapter(to)
 
-    engine = SyncEngine(source=source, target=target)
+    engine = SyncEngine(source=source, target=target, quarantine_path=quarantine_file)
     if live:
         console.print("[bold]Running until caught up...[/bold]")
         engine.run_until_caught_up()
@@ -140,11 +148,25 @@ def migrate(
         synced = engine.run_once()
         console.print(f"Synced {synced} records.")
 
+    if engine.stats.records_deleted:
+        console.print(f"Propagated {engine.stats.records_deleted} deletes.")
+    if engine.stats.records_quarantined:
+        console.print(
+            f"[yellow]Quarantined {engine.stats.records_quarantined} records "
+            f"(see {quarantine_file}).[/yellow]"
+        )
+
     if verify:
         if queries_file is None:
             raise typer.BadParameter("--verify-parity requires --queries")
         cases = [QueryCase(**c) for c in json.loads(queries_file.read_text())]
-        report = verify_parity(source, target, cases, min_recall_at_k=min_recall)
+        report = verify_parity(
+            source,
+            target,
+            cases,
+            min_recall_at_k=min_recall,
+            min_per_query_recall=min_per_query_recall,
+        )
 
         table = Table(title="Parity Report")
         table.add_column("Query")

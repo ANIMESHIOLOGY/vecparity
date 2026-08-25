@@ -14,6 +14,7 @@ from vecparity.types import ScoredMatch, VectorRecord
 class MemoryAdapter(VectorDBAdapter):
     def __init__(self) -> None:
         self._store: dict[str, VectorRecord] = {}
+        self._tombstones: dict[str, float] = {}
 
     def get(self, id: str) -> VectorRecord | None:
         return self._store.get(id)
@@ -24,15 +25,23 @@ class MemoryAdapter(VectorDBAdapter):
             if r.updated_at is None:
                 r = r.model_copy(update={"updated_at": now})
             self._store[r.id] = r
+            self._tombstones.pop(r.id, None)
 
     def delete(self, ids: list[str]) -> None:
+        now = time.time()
         for id in ids:
-            self._store.pop(id, None)
+            if self._store.pop(id, None) is not None:
+                self._tombstones[id] = now
 
     def list_changed_since(self, cursor: float | None) -> Iterator[VectorRecord]:
         for r in self._store.values():
-            if cursor is None or (r.updated_at or 0) > cursor:
+            if cursor is None or (r.updated_at or 0) >= cursor:
                 yield r
+
+    def list_deleted_since(self, cursor: float | None) -> Iterator[tuple[str, float]]:
+        for id, deleted_at in self._tombstones.items():
+            if cursor is None or deleted_at >= cursor:
+                yield id, deleted_at
 
     def search(self, vector: list[float], top_k: int) -> list[ScoredMatch]:
         if not self._store:

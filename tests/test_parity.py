@@ -61,3 +61,37 @@ def test_explicit_query_vector_does_not_require_source_membership():
 
     report = verify_parity(source, target, [QueryCase(query_vector=[2.0, 0.0, 0.0], top_k=3)])
     assert report.passed
+
+
+def test_per_query_floor_catches_what_the_mean_hides():
+    source = MemoryAdapter()
+    target = MemoryAdapter()
+    records = [_record(f"doc-{i}", [float(i), float(i) + 1, 0.0]) for i in range(10)]
+    source.upsert(records)
+    target.upsert([r for r in records if r.id != "doc-9"])  # one record missing
+
+    queries = [QueryCase(query_id=f"doc-{i}", top_k=1) for i in range(10)]
+    report = verify_parity(source, target, queries, min_recall_at_k=0.5)
+
+    # One query totally fails, but it's hidden inside a high mean.
+    assert report.passed
+    assert report.min_recall == 0.0
+
+    gated = verify_parity(source, target, queries, min_recall_at_k=0.5, min_per_query_recall=0.9)
+    assert not gated.passed
+
+
+def test_percentile_and_threshold_stats():
+    source = MemoryAdapter()
+    target = MemoryAdapter()
+    records = [_record(f"doc-{i}", [float(i), float(i) + 1, 0.0]) for i in range(4)]
+    source.upsert(records)
+    target.upsert(records[:2])  # doc-2 and doc-3 missing from target
+
+    queries = [QueryCase(query_id=f"doc-{i}", top_k=1) for i in range(4)]
+    report = verify_parity(source, target, queries, min_recall_at_k=1.0)
+
+    recalls = sorted(r.recall_at_k for r in report.results)
+    assert report.min_recall == recalls[0]
+    assert 0.0 <= report.p50_recall <= 1.0
+    assert report.queries_below_threshold_pct == 50.0

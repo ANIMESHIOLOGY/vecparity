@@ -78,7 +78,7 @@ class QdrantAdapter(VectorDBAdapter):
         query_filter = None
         if cursor is not None:
             query_filter = qm.Filter(
-                must=[qm.FieldCondition(key=self.updated_at_field, range=qm.Range(gt=cursor))]
+                must=[qm.FieldCondition(key=self.updated_at_field, range=qm.Range(gte=cursor))]
             )
         offset = None
         while True:
