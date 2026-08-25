@@ -10,6 +10,7 @@ from __future__ import annotations
 
 import uuid
 from collections.abc import Iterator
+from typing import Any
 
 from vecparity.adapters.base import VectorDBAdapter
 from vecparity.types import ScoredMatch, VectorRecord
@@ -94,11 +95,22 @@ class QdrantAdapter(VectorDBAdapter):
             if offset is None:
                 break
 
-    def search(self, vector: list[float], top_k: int) -> list[ScoredMatch]:
+    def search(
+        self, vector: list[float], top_k: int, filter: dict[str, Any] | None = None
+    ) -> list[ScoredMatch]:
         # qdrant-client >=1.10 dropped .search() in favor of .query_points().
+        query_filter = None
+        if filter is not None:
+            query_filter = qm.Filter(
+                must=[
+                    qm.FieldCondition(key=k, match=qm.MatchValue(value=v))
+                    for k, v in filter.items()
+                ]
+            )
         response = self.client.query_points(
             collection_name=self.collection,
             query=vector,
+            query_filter=query_filter,
             limit=top_k,
             with_payload=True,
         )

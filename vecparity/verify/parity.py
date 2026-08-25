@@ -158,8 +158,8 @@ def verify_parity(
                 raise ValueError(f"query_id {q.query_id!r} not found in source")
             vector = record.vector
 
-        source_hits = source.search(vector, top_k=q.top_k)
-        target_hits = target.search(vector, top_k=q.top_k)
+        source_hits = source.search(vector, top_k=q.top_k, filter=q.filter)
+        target_hits = target.search(vector, top_k=q.top_k, filter=q.filter)
         results.append(_compare_one(source_hits, target_hits, q.label))
 
     return ParityReport(

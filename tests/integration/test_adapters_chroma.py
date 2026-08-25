@@ -64,6 +64,23 @@ def test_search_returns_nearest_neighbor_first(adapter):
     assert hits[0].score > hits[1].score
 
 
+def test_search_with_filter_excludes_non_matching(adapter):
+    # Well-separated (~46 deg) so an approximate index can't blur the
+    # ranking the way two near-identical vectors could.
+    adapter.upsert(
+        [
+            VectorRecord(id="keep", vector=[1.0, 0.0, 0.0], metadata={"tag": "keep"}),
+            VectorRecord(id="drop", vector=[0.7, 0.714, 0.0], metadata={"tag": "drop"}),
+        ]
+    )
+
+    unfiltered = adapter.search([0.7, 0.714, 0.0], top_k=1)
+    assert unfiltered[0].id == "drop"
+
+    filtered = adapter.search([0.7, 0.714, 0.0], top_k=1, filter={"tag": "keep"})
+    assert filtered[0].id == "keep"
+
+
 def test_delete_removes_record(adapter):
     adapter.upsert([VectorRecord(id="x", vector=[0.0, 0.0, 1.0])])
     assert adapter.get("x") is not None

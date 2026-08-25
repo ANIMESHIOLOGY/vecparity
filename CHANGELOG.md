@@ -2,6 +2,8 @@
 
 ## Unreleased
 
+- Added filter-aware parity checks: `search()` now takes an optional `filter` (equality-only metadata filter, an implicit AND across keys), implemented across all six real backends plus the in-memory adapter. `QueryCase.filter` lets `verify_parity()` replay a golden query's real filter against both source and target, instead of only ever checking plain unfiltered similarity, which could miss a gap that only shows up on a filtered query path. Deliberately narrow scope, on purpose: equality only, no cross-backend query DSL, no sparse/hybrid search yet (backend support for that varies too widely to build generically without a concrete need driving it).
+
 - Added schema inspection: `inspect_adapter()` samples a collection through the existing `list_changed_since`/`count` protocol (no new adapter methods) to infer vector dimension and metadata field types. `compare_schemas()` turns two of these into a `CompatibilityReport`, flagging a dimension mismatch as blocking and metadata type drift or a non-empty target as warnings.
 - New `vecparity plan --from ... --to ...` prints that compatibility report and exits non-zero on a blocking issue, before any data moves.
 - New `vecparity validate --from ... --to ...` checks connectivity to both sides, then proves target write access with a real probe upsert/delete (dimension-matched to the source) rather than just checking the client object connected.

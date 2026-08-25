@@ -101,7 +101,12 @@ SyncEngine(source, target).run_until_caught_up()
 
 report = verify_parity(
     source, target,
-    queries=[QueryCase(query_id="doc-123", top_k=10, label="spot check")],
+    queries=[
+        QueryCase(query_id="doc-123", top_k=10, label="spot check"),
+        # filter is replayed on both sides, so parity is checked on the
+        # same filtered path a real query would take
+        QueryCase(query_vector=[...], top_k=10, filter={"tenant_id": "acme"}),
+    ],
     min_recall_at_k=0.9,
 )
 print(report.summary())

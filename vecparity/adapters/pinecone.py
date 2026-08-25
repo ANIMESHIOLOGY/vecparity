@@ -68,9 +68,15 @@ class PineconeAdapter(VectorDBAdapter):
         if id_batch:
             yield from self._fetch_and_filter(id_batch, cursor)
 
-    def search(self, vector: list[float], top_k: int) -> list[ScoredMatch]:
+    def search(
+        self, vector: list[float], top_k: int, filter: dict[str, Any] | None = None
+    ) -> list[ScoredMatch]:
         result = self.index.query(
-            vector=vector, top_k=top_k, namespace=self.namespace, include_metadata=True
+            vector=vector,
+            top_k=top_k,
+            namespace=self.namespace,
+            filter=filter,
+            include_metadata=True,
         )
         matches = result.matches if hasattr(result, "matches") else result.get("matches", [])
         return [

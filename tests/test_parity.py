@@ -95,3 +95,84 @@ def test_percentile_and_threshold_stats():
     assert report.min_recall == recalls[0]
     assert 0.0 <= report.p50_recall <= 1.0
     assert report.queries_below_threshold_pct == 50.0
+
+
+def test_memory_adapter_search_filter_is_equality_and():
+    # a=[1,0] (0 deg), b=[0.9,0.436] (~26 deg), c=[0.7,0.714] (~46 deg):
+    # the query below matches "c" exactly, so cosine similarity ranks
+    # c > b > a unfiltered.
+    adapter = MemoryAdapter()
+    adapter.upsert(
+        [
+            VectorRecord(id="a", vector=[1.0, 0.0], metadata={"tag": "keep", "n": 1}),
+            VectorRecord(id="b", vector=[0.9, 0.436], metadata={"tag": "keep", "n": 2}),
+            VectorRecord(id="c", vector=[0.7, 0.714], metadata={"tag": "drop", "n": 1}),
+        ]
+    )
+    query = [0.7, 0.714]
+
+    # "c" is nearest unfiltered.
+    assert adapter.search(query, top_k=1)[0].id == "c"
+
+    # Single-key filter excludes "c"; "b" is next nearest.
+    tag_filtered = adapter.search(query, top_k=1, filter={"tag": "keep"})
+    assert tag_filtered[0].id == "b"
+
+    # Multi-key filter is an AND, not an OR: only "a" matches both.
+    both = adapter.search(query, top_k=3, filter={"tag": "keep", "n": 1})
+    assert [m.id for m in both] == ["a"]
+
+
+def test_filter_replayed_identically_on_both_sides():
+    # query matches "b" exactly, so "b" wins unfiltered; "a" is the only
+    # other record and only surfaces once "b" is filtered out.
+    source = MemoryAdapter()
+    target = MemoryAdapter()
+    records = [
+        VectorRecord(id="a", vector=[1.0, 0.0], metadata={"tag": "keep"}),
+        VectorRecord(id="b", vector=[0.7, 0.714], metadata={"tag": "drop"}),
+    ]
+    source.upsert(records)
+    target.upsert(records)
+    query = [0.7, 0.714]
+
+    unfiltered = verify_parity(
+        source, target, [QueryCase(query_vector=query, top_k=1)], min_recall_at_k=1.0
+    )
+    assert unfiltered.results[0].source_top_k == unfiltered.results[0].target_top_k == ["b"]
+
+    filtered = verify_parity(
+        source,
+        target,
+        [QueryCase(query_vector=query, top_k=1, filter={"tag": "keep"})],
+        min_recall_at_k=1.0,
+    )
+    assert filtered.results[0].source_top_k == filtered.results[0].target_top_k == ["a"]
+
+
+def test_filter_replay_catches_a_gap_an_unfiltered_check_would_miss():
+    source = MemoryAdapter()
+    target = MemoryAdapter()
+    records = [
+        VectorRecord(id="a", vector=[1.0, 0.0], metadata={"tag": "keep"}),
+        VectorRecord(id="b", vector=[0.7, 0.714], metadata={"tag": "drop"}),
+    ]
+    source.upsert(records)
+    target.upsert([records[1]])  # target only has "b", the one a real filtered query excludes
+    query = [0.7, 0.714]
+
+    # Unfiltered: target's only record ("b") still looks like a perfect match.
+    unfiltered = verify_parity(
+        source, target, [QueryCase(query_vector=query, top_k=1)], min_recall_at_k=1.0
+    )
+    assert unfiltered.passed
+
+    # Replaying the real filtered query path: target has nothing tagged
+    # "keep" at all, so recall collapses instead of hiding behind "b".
+    filtered = verify_parity(
+        source,
+        target,
+        [QueryCase(query_vector=query, top_k=1, filter={"tag": "keep"})],
+        min_recall_at_k=1.0,
+    )
+    assert not filtered.passed

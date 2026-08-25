@@ -43,3 +43,7 @@ class QueryCase(BaseModel):
     top_k: int = 10
     label: str | None = None
     """Optional human-readable name, shown in parity reports/CI failures."""
+    filter: dict[str, Any] | None = None
+    """Optional equality-only metadata filter, replayed against both
+    source and target so parity is checked on the same filtered path a
+    real query would take, not just plain unfiltered similarity."""

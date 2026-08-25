@@ -4,6 +4,7 @@ from __future__ import annotations
 
 from abc import ABC, abstractmethod
 from collections.abc import Iterator
+from typing import Any
 
 from vecparity.types import ScoredMatch, VectorRecord
 
@@ -37,8 +38,20 @@ class VectorDBAdapter(ABC):
         """
 
     @abstractmethod
-    def search(self, vector: list[float], top_k: int) -> list[ScoredMatch]:
-        """Run a similarity search, used only for parity verification."""
+    def search(
+        self, vector: list[float], top_k: int, filter: dict[str, Any] | None = None
+    ) -> list[ScoredMatch]:
+        """Run a similarity search, used only for parity verification.
+
+        `filter`, if given, is an equality-only metadata filter: every
+        key must match its value exactly (an implicit AND across keys).
+        This is deliberately not a general query DSL, only enough to
+        replay a golden query's original filter during a parity check,
+        so a check against a filtered production query path doesn't
+        silently compare unfiltered results instead. An adapter that
+        can't apply a given filter should raise, not silently ignore it,
+        since a silently-unfiltered comparison would corrupt the report.
+        """
 
     @abstractmethod
     def count(self) -> int:
