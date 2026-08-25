@@ -15,6 +15,7 @@ from rich.console import Console
 from rich.table import Table
 
 from vecparity.adapters.base import VectorDBAdapter
+from vecparity.checkpoint import DEFAULT_CHECKPOINT_PATH, CheckpointStore
 from vecparity.sync.engine import SyncEngine
 from vecparity.types import QueryCase
 from vecparity.verify.parity import verify_parity
@@ -113,6 +114,44 @@ def _load_adapter(spec: str) -> VectorDBAdapter:
     raise typer.BadParameter(f"unknown backend {backend!r} in {spec!r}")
 
 
+def _migration_id(from_: str, to: str) -> str:
+    return f"{from_}=>{to}"
+
+
+checkpoint_app = typer.Typer(add_completion=False, help="Inspect or clear saved migration state.")
+app.add_typer(checkpoint_app, name="checkpoint")
+
+
+@checkpoint_app.command("show")
+def checkpoint_show(
+    from_: str = typer.Option(..., "--from"),
+    to: str = typer.Option(..., "--to"),
+    checkpoint_file: Path = typer.Option(DEFAULT_CHECKPOINT_PATH, "--checkpoint-file"),
+) -> None:
+    """Print the saved cursor and progress for a --from/--to pair, if any."""
+    store = CheckpointStore(checkpoint_file)
+    cp = store.load(_migration_id(from_, to))
+    if cp is None:
+        console.print("No checkpoint saved for this migration.")
+        return
+    console.print(
+        f"cursor={cp.cursor} records_synced={cp.records_synced} "
+        f"records_deleted={cp.records_deleted} last_batch_at={cp.last_batch_at}"
+    )
+
+
+@checkpoint_app.command("clear")
+def checkpoint_clear(
+    from_: str = typer.Option(..., "--from"),
+    to: str = typer.Option(..., "--to"),
+    checkpoint_file: Path = typer.Option(DEFAULT_CHECKPOINT_PATH, "--checkpoint-file"),
+) -> None:
+    """Delete the saved checkpoint, so the next migrate starts from scratch."""
+    store = CheckpointStore(checkpoint_file)
+    store.delete(_migration_id(from_, to))
+    console.print("Checkpoint cleared.")
+
+
 @app.command()
 def migrate(
     from_: str = typer.Option(..., "--from", help="source, e.g. pgvector://docs"),
@@ -135,17 +174,41 @@ def migrate(
     quarantine_file: Path | None = typer.Option(
         None, "--quarantine-file", help="where records that fail every retry get logged"
     ),
+    checkpoint_file: Path = typer.Option(
+        DEFAULT_CHECKPOINT_PATH,
+        "--checkpoint-file",
+        help="SQLite file storing resumable migration state",
+    ),
+    fresh: bool = typer.Option(
+        False, "--fresh", help="ignore any saved checkpoint and start from the beginning"
+    ),
 ) -> None:
     """Sync `--from` into `--to`, optionally verifying retrieval parity."""
     source = _load_adapter(from_)
     target = _load_adapter(to)
 
-    engine = SyncEngine(source=source, target=target, quarantine_path=quarantine_file)
+    migration_id = _migration_id(from_, to)
+    store = CheckpointStore(checkpoint_file)
+    saved = None if fresh else store.load(migration_id)
+
+    if saved is not None:
+        console.print(
+            f"[bold]Resuming[/bold] from checkpoint "
+            f"(cursor={saved.cursor}, {saved.records_synced} already synced)."
+        )
+        engine = SyncEngine.from_checkpoint(source, target, saved, quarantine_path=quarantine_file)
+    else:
+        engine = SyncEngine(source=source, target=target, quarantine_path=quarantine_file)
+
+    def _save_checkpoint() -> None:
+        store.save(engine.checkpoint(migration_id, from_, to))
+
     if live:
         console.print("[bold]Running until caught up...[/bold]")
-        engine.run_until_caught_up()
+        engine.run_until_caught_up(on_batch=_save_checkpoint)
     else:
         synced = engine.run_once()
+        _save_checkpoint()
         console.print(f"Synced {synced} records.")
 
     if engine.stats.records_deleted:
