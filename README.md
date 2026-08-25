@@ -163,15 +163,18 @@ For each query, VecParity compares the source's and target's top-k results:
 | `jaccard_overlap` | Set overlap of the two top-k result lists |
 | `mean_score_drift` | Average similarity-score difference for ids present in both |
 
-`ParityReport.passed` gates on mean recall@k against a threshold you choose. Use your own golden query set (real user queries plus expected top hits) for a meaningful check, not just random vectors.
+The report also aggregates across the whole query set: `mean_recall_at_k`, `p50_recall`, `p95_recall`, `min_recall`, and `queries_below_threshold_pct`, so one badly-served query can't hide inside a passing average. `ParityReport.passed` gates on the mean recall@k against a threshold you choose, and optionally on `min_per_query_recall`, a floor every individual query must also clear. A query can carry a `filter` (equality-only metadata filter), replayed against both sides, so the check exercises the same filtered path a real query would take, not just plain unfiltered similarity.
+
+Use your own golden query set (real user queries plus expected top hits) for a meaningful check, not just random vectors.
 
 ---
 
 ## Design Principles
 
-- **Migration-time only, not a permanent ORM.** VecParity doesn't try to be a universal query API you build your app against forever; that's how abstractions like this end up leaky. Adapters implement five operations (`get`, `upsert`, `delete`, `list_changed_since`, `search`) and nothing more.
+- **Migration-time only, not a permanent ORM.** VecParity doesn't try to be a universal query API you build your app against forever; that's how abstractions like this end up leaky. Adapters implement six operations (`get`, `upsert`, `delete`, `list_changed_since`, `search`, `count`), plus one optional one for delete tracking (`list_deleted_since`), and nothing more.
 - **Incremental by default.** `list_changed_since` plus a cursor means re-running a migration only copies what changed, so it's safe to run alongside a live app.
 - **Quality, not just presence.** The whole point of this project is the parity report; everything else is plumbing to get there.
+- **Narrow on purpose, even under pressure to grow.** `search()`'s `filter` is equality-only, not a cross-backend query DSL; `cutover`/`rollback` track state and run a real verification pass, they don't fake application-traffic control or reverse data sync, which vecparity has no way to actually do. Saying no to scope here is deliberate, not an oversight.
 
 ---
 
