@@ -232,15 +232,21 @@ class SyncEngine:
         poll_interval: float = 5.0,
         idle_passes: int = 2,
         on_batch: Callable[[], None] | None = None,
+        should_stop: Callable[[], bool] | None = None,
     ) -> None:
         """Poll `run_once` until N consecutive passes sync nothing.
         `on_batch`, if given, runs after every pass, so a caller can
-        persist a checkpoint mid-run instead of only at the very end."""
+        persist a checkpoint mid-run instead of only at the very end.
+        `should_stop`, if given, is checked after every pass too, so a
+        caller can request a cooperative stop (e.g. a pause or cancel
+        recorded elsewhere) without killing the process outright."""
         consecutive_idle = 0
         while consecutive_idle < idle_passes:
             synced = self.run_once()
             if on_batch is not None:
                 on_batch()
+            if should_stop is not None and should_stop():
+                return
             consecutive_idle = consecutive_idle + 1 if synced == 0 else 0
             if consecutive_idle < idle_passes:
                 time.sleep(poll_interval)

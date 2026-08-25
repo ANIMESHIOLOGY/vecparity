@@ -1,6 +1,6 @@
 # Backend connection reference
 
-The CLI (`vecparity migrate --from ... --to ...`) reads connection details
+The CLI (`vecparity migrate run --from ... --to ...`) reads connection details
 from environment variables rather than CLI flags, so nothing sensitive
 (passwords, API keys) ends up in shell history or process listings.
 

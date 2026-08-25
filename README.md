@@ -70,20 +70,47 @@ vecparity plan --from pgvector://docs --to qdrant://docs
 vecparity validate --from pgvector://docs --to qdrant://docs
 
 # One-shot migration
-vecparity migrate --from pgvector://docs --to qdrant://docs
+vecparity migrate run --from pgvector://docs --to qdrant://docs
 
 # Live migration: keeps polling for changes until caught up, so your
 # app can keep writing to the source the whole time
-vecparity migrate --from pgvector://docs --to qdrant://docs --live
+vecparity migrate run --from pgvector://docs --to qdrant://docs --live
 
 # Migrate AND verify retrieval quality survived, gated on a query set
-vecparity migrate --from pgvector://docs --to qdrant://docs \
+vecparity migrate run --from pgvector://docs --to qdrant://docs \
     --live --verify-parity --queries golden_queries.json --min-recall 0.95
 ```
 
 A migration in progress checkpoints its cursor to `~/.vecparity/checkpoints.db`, so a crashed or interrupted `--live` run resumes from where it left off instead of starting over. `vecparity checkpoint show`/`clear` inspect or discard that state.
 
 A failed parity or compatibility check exits non-zero, so any of these can wire into CI or a deploy gate to stop a bad migration from silently shipping.
+
+### Cutover Workflow
+
+Once a live migration is caught up and verified, there's a defined, visible path to actually cutting over, not just a `migrate run` you either trust blindly or don't run at all:
+
+```bash
+# Check on a migration from another terminal while --live is running
+vecparity migrate status --from pgvector://docs --to qdrant://docs
+
+# Request a running --live migration to stop cleanly at its next poll
+vecparity migrate pause --from pgvector://docs --to qdrant://docs
+# ...re-run `migrate run` (no --fresh) later to resume from the checkpoint
+
+# Mark a migration cancelled; a future `migrate run` refuses to resume
+# it without --fresh
+vecparity migrate cancel --from pgvector://docs --to qdrant://docs
+
+# Final sync pass + final parity check; only marks the migration cut
+# over if it passes
+vecparity cutover --from pgvector://docs --to qdrant://docs \
+    --queries golden_queries.json --min-recall 0.95
+
+# Record that a cut-over migration was rolled back
+vecparity rollback --from pgvector://docs --to qdrant://docs
+```
+
+Worth being precise about what this does and doesn't do: vecparity has no way to redirect your application's traffic, and `rollback` doesn't sync data back to the source, it isn't a two-way replication tool. `cutover`/`rollback` track migration state and give you evidence (a fresh final parity check) for a decision you still make and act on yourself.
 
 ### Programmatic Use
 
