@@ -2,6 +2,9 @@
 
 ## Unreleased
 
+- Added rich migration reports: `vecparity/report.py` combines a migration's checkpoint state and its parity results into a self-contained HTML page or a JSON export (no external assets, works offline). `vecparity cutover` gained `--report-json`/`--report-html` to write one out after the final parity check.
+- Added a synthetic benchmark harness: `vecparity benchmark --from ... --to ... --num-records N` seeds synthetic vectors into a source and times a real `SyncEngine` run into a target, reporting throughput, batch count, and peak memory. Deliberately not a claim about 1M/10M/100M-scale numbers: those need real infrastructure to measure honestly, not a synthetic dev-machine run. See `docs/benchmarking.md`, including one real data point (200k vectors into a local Qdrant container) for context on what the tool measures.
+
 - **Breaking:** `vecparity migrate --from ... --to ...` is now `vecparity migrate run --from ... --to ...`. `migrate` became a command group so it could gain `status`, `pause`, and `cancel` alongside `run`.
 - Added an operational status to every migration, persisted alongside its checkpoint: `not_started`, `syncing`, `paused`, `verified`, `cut_over`, `rolled_back`, or `cancelled`.
   - `vecparity migrate status` shows it, plus cursor and progress.
