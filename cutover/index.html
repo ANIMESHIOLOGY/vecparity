@@ -8,29 +8,31 @@
       
       
       
-        <link rel="canonical" href="https://animeshiology.github.io/vecparity/">
+        <link rel="canonical" href="https://animeshiology.github.io/vecparity/cutover/">
       
       
+        <link rel="prev" href="../backends/">
       
-        <link rel="next" href="installation/">
+      
+        <link rel="next" href="../design-principles/">
       
       
         
       
       
-      <link rel="icon" href="assets/vecparity_logo.png">
+      <link rel="icon" href="../assets/vecparity_logo.png">
       <meta name="generator" content="mkdocs-1.6.1, mkdocs-material-9.7.7">
     
     
       
-        <title>vecparity</title>
+        <title>Cutover Workflow - vecparity</title>
       
     
     
-      <link rel="stylesheet" href="assets/stylesheets/main.ec1eaa64.min.css">
+      <link rel="stylesheet" href="../assets/stylesheets/main.ec1eaa64.min.css">
       
         
-        <link rel="stylesheet" href="assets/stylesheets/palette.ab4e12ef.min.css">
+        <link rel="stylesheet" href="../assets/stylesheets/palette.ab4e12ef.min.css">
       
       
 
@@ -49,11 +51,11 @@
       
     
     
-      <link rel="stylesheet" href="assets/_mkdocstrings.css">
+      <link rel="stylesheet" href="../assets/_mkdocstrings.css">
     
-      <link rel="stylesheet" href="stylesheets/extra.css">
+      <link rel="stylesheet" href="../stylesheets/extra.css">
     
-    <script>__md_scope=new URL(".",location),__md_hash=e=>[...e].reduce(((e,_)=>(e<<5)-e+_.charCodeAt(0)),0),__md_get=(e,_=localStorage,t=__md_scope)=>JSON.parse(_.getItem(t.pathname+"."+e)),__md_set=(e,_,t=localStorage,a=__md_scope)=>{try{t.setItem(a.pathname+"."+e,JSON.stringify(_))}catch(e){}}</script>
+    <script>__md_scope=new URL("..",location),__md_hash=e=>[...e].reduce(((e,_)=>(e<<5)-e+_.charCodeAt(0)),0),__md_get=(e,_=localStorage,t=__md_scope)=>JSON.parse(_.getItem(t.pathname+"."+e)),__md_set=(e,_,t=localStorage,a=__md_scope)=>{try{t.setItem(a.pathname+"."+e,JSON.stringify(_))}catch(e){}}</script>
     
       
 
@@ -78,7 +80,7 @@
     <div data-md-component="skip">
       
         
-        <a href="#vecparity" class="md-skip">
+        <a href="#cutover-workflow" class="md-skip">
           Skip to content
         </a>
       
@@ -92,9 +94,9 @@
 
 <header class="md-header" data-md-component="header">
   <nav class="md-header__inner md-grid" aria-label="Header">
-    <a href="." title="vecparity" class="md-header__button md-logo" aria-label="vecparity" data-md-component="logo">
+    <a href=".." title="vecparity" class="md-header__button md-logo" aria-label="vecparity" data-md-component="logo">
       
-  <img src="assets/vecparity_logo.png" alt="logo">
+  <img src="../assets/vecparity_logo.png" alt="logo">
 
     </a>
     <label class="md-header__button md-icon" for="__drawer">
@@ -111,7 +113,7 @@
         <div class="md-header__topic" data-md-component="header-topic">
           <span class="md-ellipsis">
             
-              Home
+              Cutover Workflow
             
           </span>
         </div>
@@ -222,11 +224,9 @@
   
   
   
-    
   
-  
-    <li class="md-tabs__item md-tabs__item--active">
-      <a href="." class="md-tabs__link">
+    <li class="md-tabs__item">
+      <a href=".." class="md-tabs__link">
         
   
   
@@ -245,7 +245,7 @@
   
   
     <li class="md-tabs__item">
-      <a href="installation/" class="md-tabs__link">
+      <a href="../installation/" class="md-tabs__link">
         
   
   
@@ -264,7 +264,7 @@
   
   
     <li class="md-tabs__item">
-      <a href="quickstart/" class="md-tabs__link">
+      <a href="../quickstart/" class="md-tabs__link">
         
   
   
@@ -283,7 +283,7 @@
   
   
     <li class="md-tabs__item">
-      <a href="backends/" class="md-tabs__link">
+      <a href="../backends/" class="md-tabs__link">
         
   
   
@@ -300,9 +300,11 @@
   
   
   
+    
   
-    <li class="md-tabs__item">
-      <a href="cutover/" class="md-tabs__link">
+  
+    <li class="md-tabs__item md-tabs__item--active">
+      <a href="./" class="md-tabs__link">
         
   
   
@@ -321,7 +323,7 @@
   
   
     <li class="md-tabs__item">
-      <a href="design-principles/" class="md-tabs__link">
+      <a href="../design-principles/" class="md-tabs__link">
         
   
   
@@ -342,7 +344,7 @@
     
     
       <li class="md-tabs__item">
-        <a href="api-reference/adapters/" class="md-tabs__link">
+        <a href="../api-reference/adapters/" class="md-tabs__link">
           
   
   
@@ -378,9 +380,9 @@
 
 <nav class="md-nav md-nav--primary md-nav--lifted md-nav--integrated" aria-label="Navigation" data-md-level="0">
   <label class="md-nav__title" for="__drawer">
-    <a href="." title="vecparity" class="md-nav__button md-logo" aria-label="vecparity" data-md-component="logo">
+    <a href=".." title="vecparity" class="md-nav__button md-logo" aria-label="vecparity" data-md-component="logo">
       
-  <img src="assets/vecparity_logo.png" alt="logo">
+  <img src="../assets/vecparity_logo.png" alt="logo">
 
     </a>
     vecparity
@@ -404,37 +406,10 @@
       
   
   
-    
   
   
-  
-    <li class="md-nav__item md-nav__item--active">
-      
-      <input class="md-nav__toggle md-toggle" type="checkbox" id="__toc">
-      
-      
-        
-      
-      
-        <label class="md-nav__link md-nav__link--active" for="__toc">
-          
-  
-  
-  <span class="md-ellipsis">
-    
-  
-    Home
-  
-
-    
-  </span>
-  
-  
-
-          <span class="md-nav__icon md-icon"></span>
-        </label>
-      
-      <a href="." class="md-nav__link md-nav__link--active">
+    <li class="md-nav__item">
+      <a href=".." class="md-nav__link">
         
   
   
@@ -450,37 +425,6 @@
   
 
       </a>
-      
-        
-
-<nav class="md-nav md-nav--secondary" aria-label="Table of contents">
-  
-  
-  
-    
-  
-  
-    <label class="md-nav__title" for="__toc">
-      <span class="md-nav__icon md-icon"></span>
-      Table of contents
-    </label>
-    <ul class="md-nav__list" data-md-component="toc" data-md-scrollfix>
-      
-        <li class="md-nav__item">
-  <a href="#where-to-go-next" class="md-nav__link">
-    <span class="md-ellipsis">
-      
-        Where to go next
-      
-    </span>
-  </a>
-  
-</li>
-      
-    </ul>
-  
-</nav>
-      
     </li>
   
 
@@ -492,7 +436,7 @@
   
   
     <li class="md-nav__item">
-      <a href="installation/" class="md-nav__link">
+      <a href="../installation/" class="md-nav__link">
         
   
   
@@ -519,7 +463,7 @@
   
   
     <li class="md-nav__item">
-      <a href="quickstart/" class="md-nav__link">
+      <a href="../quickstart/" class="md-nav__link">
         
   
   
@@ -546,7 +490,7 @@
   
   
     <li class="md-nav__item">
-      <a href="backends/" class="md-nav__link">
+      <a href="../backends/" class="md-nav__link">
         
   
   
@@ -570,10 +514,37 @@
       
   
   
+    
   
   
-    <li class="md-nav__item">
-      <a href="cutover/" class="md-nav__link">
+  
+    <li class="md-nav__item md-nav__item--active">
+      
+      <input class="md-nav__toggle md-toggle" type="checkbox" id="__toc">
+      
+      
+        
+      
+      
+        <label class="md-nav__link md-nav__link--active" for="__toc">
+          
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Cutover Workflow
+  
+
+    
+  </span>
+  
+  
+
+          <span class="md-nav__icon md-icon"></span>
+        </label>
+      
+      <a href="./" class="md-nav__link md-nav__link--active">
         
   
   
@@ -589,6 +560,81 @@
   
 
       </a>
+      
+        
+
+<nav class="md-nav md-nav--secondary" aria-label="Table of contents">
+  
+  
+  
+    
+  
+  
+    <label class="md-nav__title" for="__toc">
+      <span class="md-nav__icon md-icon"></span>
+      Table of contents
+    </label>
+    <ul class="md-nav__list" data-md-component="toc" data-md-scrollfix>
+      
+        <li class="md-nav__item">
+  <a href="#status" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Status
+      
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#pause-and-resume" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Pause and resume
+      
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#cancel" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Cancel
+      
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#cutover" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Cutover
+      
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#rollback" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Rollback
+      
+    </span>
+  </a>
+  
+</li>
+      
+    </ul>
+  
+</nav>
+      
     </li>
   
 
@@ -600,7 +646,7 @@
   
   
     <li class="md-nav__item">
-      <a href="design-principles/" class="md-nav__link">
+      <a href="../design-principles/" class="md-nav__link">
         
   
   
@@ -681,7 +727,7 @@
   
   
     <li class="md-nav__item">
-      <a href="api-reference/adapters/" class="md-nav__link">
+      <a href="../api-reference/adapters/" class="md-nav__link">
         
   
   
@@ -709,7 +755,7 @@
   
   
     <li class="md-nav__item">
-      <a href="api-reference/sync/" class="md-nav__link">
+      <a href="../api-reference/sync/" class="md-nav__link">
         
   
   
@@ -737,7 +783,7 @@
   
   
     <li class="md-nav__item">
-      <a href="api-reference/verify/" class="md-nav__link">
+      <a href="../api-reference/verify/" class="md-nav__link">
         
   
   
@@ -765,7 +811,7 @@
   
   
     <li class="md-nav__item">
-      <a href="api-reference/types/" class="md-nav__link">
+      <a href="../api-reference/types/" class="md-nav__link">
         
   
   
@@ -813,37 +859,50 @@
   
 
 
-<p align="center">
-  <img src="assets/vecparity_logo.png" alt="vecparity logo" width="320">
-</p>
-
-<h1 id="vecparity">vecparity</h1>
-<p><strong>Live, quality-verified migration between vector databases.</strong></p>
-<p>Every team on a managed vector database eventually wants to switch:
-Pinecone got expensive, you want to self-host, a competitor is faster
-for your workload. Existing tools stop at "the data arrived":
-<a href="https://github.com/AI-Northstar-Tech/vector-io">vector-io/VDF</a> does
-batch export → import → re-embed across backends, and vendor migration
-guides only cover moving <em>into</em> their own product. None of them check
-whether retrieval quality survived the move.</p>
-<p>vecparity does two things nothing else does together:</p>
-<ul>
-<li><strong>Migrates incrementally, without downtime.</strong> A <code>SyncEngine</code> that
-  polls a source adapter's <code>list_changed_since</code> cursor and replays
-  changes to the target, so a migration can run alongside a live app.</li>
-<li><strong>Verifies retrieval parity before you cut over.</strong> <code>verify_parity()</code>
-  runs a query set against both the source and target and reports
-  recall@k, result overlap, and score drift, producing a pass/fail
-  <code>ParityReport</code> you can gate a deploy on.</li>
-</ul>
-<h2 id="where-to-go-next">Where to go next</h2>
-<ul>
-<li><a href="installation/">Installation</a>: install with the backends you need</li>
-<li><a href="quickstart/">Quick Start</a>: migrate and verify from the CLI or Python</li>
-<li><a href="backends/">Backends</a>: connection details and env vars per backend</li>
-<li><a href="design-principles/">Design Principles</a>: why the adapter surface is deliberately small</li>
-<li><a href="api-reference/adapters/">API Reference</a>: full module documentation</li>
-</ul>
+<h1 id="cutover-workflow">Cutover Workflow</h1>
+<p>A live migration doesn't have a single point where it's "done." Once it's
+caught up and verified, there's a defined path from there to actually
+cutting over, instead of a <code>migrate run</code> you either trust blindly or
+don't run at all.</p>
+<h2 id="status">Status</h2>
+<p>Every migration (a <code>--from</code>/<code>--to</code> pair) has a persisted operational
+status, alongside its checkpoint: <code>not_started</code>, <code>syncing</code>, <code>paused</code>,
+<code>verified</code>, <code>cut_over</code>, <code>rolled_back</code>, or <code>cancelled</code>.</p>
+<div class="highlight"><pre><span></span><code><a id="__codelineno-0-1" name="__codelineno-0-1" href="#__codelineno-0-1"></a>vecparity<span class="w"> </span>migrate<span class="w"> </span>status<span class="w"> </span>--from<span class="w"> </span>pgvector://docs<span class="w"> </span>--to<span class="w"> </span>qdrant://docs
+</code></pre></div>
+<h2 id="pause-and-resume">Pause and resume</h2>
+<div class="highlight"><pre><span></span><code><a id="__codelineno-1-1" name="__codelineno-1-1" href="#__codelineno-1-1"></a>vecparity<span class="w"> </span>migrate<span class="w"> </span>pause<span class="w"> </span>--from<span class="w"> </span>pgvector://docs<span class="w"> </span>--to<span class="w"> </span>qdrant://docs
+</code></pre></div>
+<p>This is cooperative, not a kill signal: a running <code>migrate run --live</code>
+process checks for a pause request once per poll and stops cleanly,
+checkpointing first. There's no separate daemon process to signal
+directly, so this only takes effect while a <code>--live</code> run is actually
+in progress; otherwise it just records the request until the next run.</p>
+<p>Resuming is just re-running <code>migrate run</code> (without <code>--fresh</code>); it picks
+up from the checkpoint automatically.</p>
+<h2 id="cancel">Cancel</h2>
+<div class="highlight"><pre><span></span><code><a id="__codelineno-2-1" name="__codelineno-2-1" href="#__codelineno-2-1"></a>vecparity<span class="w"> </span>migrate<span class="w"> </span>cancel<span class="w"> </span>--from<span class="w"> </span>pgvector://docs<span class="w"> </span>--to<span class="w"> </span>qdrant://docs
+</code></pre></div>
+<p>Marks the migration cancelled. The checkpoint itself isn't deleted (use
+<code>vecparity checkpoint clear</code> for that); a future <code>migrate run</code> refuses
+to resume a cancelled migration unless you pass <code>--fresh</code>.</p>
+<h2 id="cutover">Cutover</h2>
+<div class="highlight"><pre><span></span><code><a id="__codelineno-3-1" name="__codelineno-3-1" href="#__codelineno-3-1"></a>vecparity<span class="w"> </span>cutover<span class="w"> </span>--from<span class="w"> </span>pgvector://docs<span class="w"> </span>--to<span class="w"> </span>qdrant://docs<span class="w"> </span><span class="se">\</span>
+<a id="__codelineno-3-2" name="__codelineno-3-2" href="#__codelineno-3-2"></a><span class="w">    </span>--queries<span class="w"> </span>golden_queries.json<span class="w"> </span>--min-recall<span class="w"> </span><span class="m">0</span>.95
+</code></pre></div>
+<p>Runs one final sync pass to close any last gap, then a final parity
+check. The migration is only marked <code>cut_over</code> if that check passes; if
+it fails, the command exits non-zero and the migration's status is left
+as-is.</p>
+<h2 id="rollback">Rollback</h2>
+<div class="highlight"><pre><span></span><code><a id="__codelineno-4-1" name="__codelineno-4-1" href="#__codelineno-4-1"></a>vecparity<span class="w"> </span>rollback<span class="w"> </span>--from<span class="w"> </span>pgvector://docs<span class="w"> </span>--to<span class="w"> </span>qdrant://docs
+</code></pre></div>
+<p>Marks a cut-over migration rolled back.</p>
+<p><strong>What this doesn't do:</strong> vecparity has no way to redirect your
+application's traffic, and <code>rollback</code> doesn't sync data back to the
+source, it isn't a two-way replication tool. Both commands track state
+and give you evidence, a real final parity check, for a decision you
+still make and act on yourself.</p>
 
 
 
@@ -864,7 +923,7 @@ whether retrieval quality survived the move.</p>
     <span class="md-icon" title="Last update">
       <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M21 13.1c-.1 0-.3.1-.4.2l-1 1 2.1 2.1 1-1c.2-.2.2-.6 0-.8l-1.3-1.3c-.1-.1-.2-.2-.4-.2m-1.9 1.8-6.1 6V23h2.1l6.1-6.1zM12.5 7v5.2l4 2.4-1 1L11 13V7zM11 21.9c-5.1-.5-9-4.8-9-9.9C2 6.5 6.5 2 12 2c5.3 0 9.6 4.1 10 9.3-.3-.1-.6-.2-1-.2s-.7.1-1 .2C19.6 7.2 16.2 4 12 4c-4.4 0-8 3.6-8 8 0 4.1 3.1 7.5 7.1 7.9l-.1.2z"/></svg>
     </span>
-    <span class="git-revision-date-localized-plugin git-revision-date-localized-plugin-date" title="August 22, 2026 15:05:02 UTC">August 22, 2026</span>
+    <span class="git-revision-date-localized-plugin git-revision-date-localized-plugin-date" title="August 25, 2026 17:58:32 UTC">August 25, 2026</span>
   </span>
 
     
@@ -899,15 +958,31 @@ whether retrieval quality survived the move.</p>
       
       <nav class="md-footer__inner md-grid" aria-label="Footer" >
         
+          
+          <a href="../backends/" class="md-footer__link md-footer__link--prev" aria-label="Previous: Backends">
+            <div class="md-footer__button md-icon">
+              
+              <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M20 11v2H8l5.5 5.5-1.42 1.42L4.16 12l7.92-7.92L13.5 5.5 8 11z"/></svg>
+            </div>
+            <div class="md-footer__title">
+              <span class="md-footer__direction">
+                Previous
+              </span>
+              <div class="md-ellipsis">
+                Backends
+              </div>
+            </div>
+          </a>
+        
         
           
-          <a href="installation/" class="md-footer__link md-footer__link--next" aria-label="Next: Installation">
+          <a href="../design-principles/" class="md-footer__link md-footer__link--next" aria-label="Next: Design Principles">
             <div class="md-footer__title">
               <span class="md-footer__direction">
                 Next
               </span>
               <div class="md-ellipsis">
-                Installation
+                Design Principles
               </div>
             </div>
             <div class="md-footer__button md-icon">
@@ -957,10 +1032,10 @@ whether retrieval quality survived the move.</p>
     
       
       
-      <script id="__config" type="application/json">{"annotate": null, "base": ".", "features": ["navigation.tabs", "navigation.sections", "navigation.expand", "navigation.top", "navigation.footer", "toc.integrate", "content.code.copy", "content.tooltips", "search.suggest", "search.highlight"], "search": "assets/javascripts/workers/search.2c215733.min.js", "tags": null, "translations": {"clipboard.copied": "Copied to clipboard", "clipboard.copy": "Copy to clipboard", "search.result.more.one": "1 more on this page", "search.result.more.other": "# more on this page", "search.result.none": "No matching documents", "search.result.one": "1 matching document", "search.result.other": "# matching documents", "search.result.placeholder": "Type to start searching", "search.result.term.missing": "Missing", "select.version": "Select version"}, "version": null}</script>
+      <script id="__config" type="application/json">{"annotate": null, "base": "..", "features": ["navigation.tabs", "navigation.sections", "navigation.expand", "navigation.top", "navigation.footer", "toc.integrate", "content.code.copy", "content.tooltips", "search.suggest", "search.highlight"], "search": "../assets/javascripts/workers/search.2c215733.min.js", "tags": null, "translations": {"clipboard.copied": "Copied to clipboard", "clipboard.copy": "Copy to clipboard", "search.result.more.one": "1 more on this page", "search.result.more.other": "# more on this page", "search.result.none": "No matching documents", "search.result.one": "1 matching document", "search.result.other": "# matching documents", "search.result.placeholder": "Type to start searching", "search.result.term.missing": "Missing", "select.version": "Select version"}, "version": null}</script>
     
     
-      <script src="assets/javascripts/bundle.d7400e89.min.js"></script>
+      <script src="../assets/javascripts/bundle.d7400e89.min.js"></script>
       
     
   </body>

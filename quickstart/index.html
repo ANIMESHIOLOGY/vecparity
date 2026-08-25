@@ -304,6 +304,25 @@
   
   
     <li class="md-tabs__item">
+      <a href="../cutover/" class="md-tabs__link">
+        
+  
+  
+    
+  
+  Cutover Workflow
+
+      </a>
+    </li>
+  
+
+      
+        
+  
+  
+  
+  
+    <li class="md-tabs__item">
       <a href="../design-principles/" class="md-tabs__link">
         
   
@@ -578,6 +597,33 @@
   
   
     <li class="md-nav__item">
+      <a href="../cutover/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Cutover Workflow
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+    
+      
+      
+  
+  
+  
+  
+    <li class="md-nav__item">
       <a href="../design-principles/" class="md-nav__link">
         
   
@@ -620,10 +666,10 @@
         
           
         
-        <input class="md-nav__toggle md-toggle md-toggle--indeterminate" type="checkbox" id="__nav_6" >
+        <input class="md-nav__toggle md-toggle md-toggle--indeterminate" type="checkbox" id="__nav_7" >
         
           
-          <label class="md-nav__link" for="__nav_6" id="__nav_6_label" tabindex="0">
+          <label class="md-nav__link" for="__nav_7" id="__nav_7_label" tabindex="0">
             
   
   
@@ -641,8 +687,8 @@
             <span class="md-nav__icon md-icon"></span>
           </label>
         
-        <nav class="md-nav" data-md-level="1" aria-labelledby="__nav_6_label" aria-expanded="false">
-          <label class="md-nav__title" for="__nav_6">
+        <nav class="md-nav" data-md-level="1" aria-labelledby="__nav_7_label" aria-expanded="false">
+          <label class="md-nav__title" for="__nav_7">
             <span class="md-nav__icon md-icon"></span>
             
   
@@ -797,18 +843,19 @@
 <a id="__codelineno-0-2" name="__codelineno-0-2" href="#__codelineno-0-2"></a><span class="nb">export</span><span class="w"> </span><span class="nv">QDRANT_URL</span><span class="o">=</span><span class="s2">"http://localhost:6333"</span>
 <a id="__codelineno-0-3" name="__codelineno-0-3" href="#__codelineno-0-3"></a>
 <a id="__codelineno-0-4" name="__codelineno-0-4" href="#__codelineno-0-4"></a><span class="c1"># One-shot migration</span>
-<a id="__codelineno-0-5" name="__codelineno-0-5" href="#__codelineno-0-5"></a>vecparity<span class="w"> </span>migrate<span class="w"> </span>--from<span class="w"> </span>pgvector://docs<span class="w"> </span>--to<span class="w"> </span>qdrant://docs
+<a id="__codelineno-0-5" name="__codelineno-0-5" href="#__codelineno-0-5"></a>vecparity<span class="w"> </span>migrate<span class="w"> </span>run<span class="w"> </span>--from<span class="w"> </span>pgvector://docs<span class="w"> </span>--to<span class="w"> </span>qdrant://docs
 <a id="__codelineno-0-6" name="__codelineno-0-6" href="#__codelineno-0-6"></a>
 <a id="__codelineno-0-7" name="__codelineno-0-7" href="#__codelineno-0-7"></a><span class="c1"># Live migration: keeps polling for changes until caught up, so your</span>
 <a id="__codelineno-0-8" name="__codelineno-0-8" href="#__codelineno-0-8"></a><span class="c1"># app can keep writing to the source the whole time</span>
-<a id="__codelineno-0-9" name="__codelineno-0-9" href="#__codelineno-0-9"></a>vecparity<span class="w"> </span>migrate<span class="w"> </span>--from<span class="w"> </span>pgvector://docs<span class="w"> </span>--to<span class="w"> </span>qdrant://docs<span class="w"> </span>--live
+<a id="__codelineno-0-9" name="__codelineno-0-9" href="#__codelineno-0-9"></a>vecparity<span class="w"> </span>migrate<span class="w"> </span>run<span class="w"> </span>--from<span class="w"> </span>pgvector://docs<span class="w"> </span>--to<span class="w"> </span>qdrant://docs<span class="w"> </span>--live
 <a id="__codelineno-0-10" name="__codelineno-0-10" href="#__codelineno-0-10"></a>
 <a id="__codelineno-0-11" name="__codelineno-0-11" href="#__codelineno-0-11"></a><span class="c1"># Migrate AND verify retrieval quality survived, gated on a query set</span>
-<a id="__codelineno-0-12" name="__codelineno-0-12" href="#__codelineno-0-12"></a>vecparity<span class="w"> </span>migrate<span class="w"> </span>--from<span class="w"> </span>pgvector://docs<span class="w"> </span>--to<span class="w"> </span>qdrant://docs<span class="w"> </span><span class="se">\</span>
+<a id="__codelineno-0-12" name="__codelineno-0-12" href="#__codelineno-0-12"></a>vecparity<span class="w"> </span>migrate<span class="w"> </span>run<span class="w"> </span>--from<span class="w"> </span>pgvector://docs<span class="w"> </span>--to<span class="w"> </span>qdrant://docs<span class="w"> </span><span class="se">\</span>
 <a id="__codelineno-0-13" name="__codelineno-0-13" href="#__codelineno-0-13"></a><span class="w">    </span>--live<span class="w"> </span>--verify-parity<span class="w"> </span>--queries<span class="w"> </span>golden_queries.json<span class="w"> </span>--min-recall<span class="w"> </span><span class="m">0</span>.95
 </code></pre></div>
 <p>A failed parity check exits non-zero, so it can wire into CI or a
 deploy gate to stop a bad migration from silently shipping.</p>
+<p>Once a live migration is caught up and verified, <code>vecparity migrate status/pause/cancel</code> and <code>vecparity cutover</code>/<code>rollback</code> give a defined path to actually cutting over; see <a href="../cutover/">cutover.md</a>.</p>
 <p><code>golden_queries.json</code> is a list of query cases:</p>
 <div class="highlight"><pre><span></span><code><a id="__codelineno-1-1" name="__codelineno-1-1" href="#__codelineno-1-1"></a><span class="p">[</span>
 <a id="__codelineno-1-2" name="__codelineno-1-2" href="#__codelineno-1-2"></a><span class="w">  </span><span class="p">{</span><span class="nt">"query_id"</span><span class="p">:</span><span class="w"> </span><span class="s2">"doc-5"</span><span class="p">,</span><span class="w"> </span><span class="nt">"top_k"</span><span class="p">:</span><span class="w"> </span><span class="mi">5</span><span class="p">,</span><span class="w"> </span><span class="nt">"label"</span><span class="p">:</span><span class="w"> </span><span class="s2">"doc-5 neighbors"</span><span class="p">},</span>
@@ -884,7 +931,7 @@ pass to <code>verify_parity()</code> (or <code>--min-recall</code> on the CLI).<
     <span class="md-icon" title="Last update">
       <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M21 13.1c-.1 0-.3.1-.4.2l-1 1 2.1 2.1 1-1c.2-.2.2-.6 0-.8l-1.3-1.3c-.1-.1-.2-.2-.4-.2m-1.9 1.8-6.1 6V23h2.1l6.1-6.1zM12.5 7v5.2l4 2.4-1 1L11 13V7zM11 21.9c-5.1-.5-9-4.8-9-9.9C2 6.5 6.5 2 12 2c5.3 0 9.6 4.1 10 9.3-.3-.1-.6-.2-1-.2s-.7.1-1 .2C19.6 7.2 16.2 4 12 4c-4.4 0-8 3.6-8 8 0 4.1 3.1 7.5 7.1 7.9l-.1.2z"/></svg>
     </span>
-    <span class="git-revision-date-localized-plugin git-revision-date-localized-plugin-date" title="August 22, 2026 15:05:02 UTC">August 22, 2026</span>
+    <span class="git-revision-date-localized-plugin git-revision-date-localized-plugin-date" title="August 25, 2026 17:58:32 UTC">August 25, 2026</span>
   </span>
 
     
