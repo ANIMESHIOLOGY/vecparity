@@ -2,6 +2,9 @@
 
 ## Unreleased
 
+- Added durable migration checkpoints: `SyncEngine.checkpoint()` / `SyncEngine.from_checkpoint()` snapshot and restore full sync state (cursor, both boundary-id sets, and progress counters), backed by a new `CheckpointStore` (SQLite, default `~/.vecparity/checkpoints.db`). `vecparity migrate` now saves a checkpoint after every batch and resumes from it automatically on the next run for the same `--from`/`--to` pair, unless `--fresh` is passed. Restoring the boundary-id sets (not just the raw cursor) matters: without them, a crash-and-resume right at a timestamp tie would reintroduce the exact tie-bug that was just fixed.
+- New `vecparity checkpoint show` / `vecparity checkpoint clear` commands to inspect or discard saved migration state.
+
 - Fixed a cursor tie-bug in `list_changed_since`: all six adapters (plus the in-memory reference adapter) switched from a strict `>` comparison to inclusive `>=`. A record sharing its timestamp with the last-seen cursor value, written after that boundary was set, was being silently skipped forever. `SyncEngine` now tracks per-boundary ids it's already synced, so the re-fetched boundary records from the inclusive query aren't reprocessed either.
 - Added delete propagation: `VectorDBAdapter.list_deleted_since(cursor)` is a new optional method (default: untracked, not an error) that yields `(id, deleted_at)` pairs; `SyncEngine` calls it alongside `list_changed_since` and mirrors deletes to the target, using the same tie-safe boundary tracking. Implemented as a tombstone table for the in-memory adapter as a reference; the six real-backend adapters don't implement it yet.
 - Strengthened the parity gate: `ParityReport` now exposes `p50_recall`, `p95_recall`, `min_recall`, and `queries_below_threshold_pct`. `verify_parity()` takes an optional `min_per_query_recall` floor so one query at 0% recall can't hide inside a passing mean.

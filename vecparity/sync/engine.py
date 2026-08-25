@@ -6,10 +6,12 @@ from __future__ import annotations
 
 import json
 import time
+from collections.abc import Callable
 from dataclasses import dataclass, field
 from pathlib import Path
 
 from vecparity.adapters.base import VectorDBAdapter
+from vecparity.checkpoint import MigrationCheckpoint
 from vecparity.types import VectorRecord
 
 
@@ -52,6 +54,50 @@ class SyncEngine:
         self.retry_backoff = retry_backoff
         self.quarantine_path = Path(quarantine_path) if quarantine_path else None
         self.stats = SyncStats(last_cursor=cursor)
+
+    @classmethod
+    def from_checkpoint(
+        cls,
+        source: VectorDBAdapter,
+        target: VectorDBAdapter,
+        checkpoint: MigrationCheckpoint,
+        batch_size: int = 500,
+        max_retries: int = 3,
+        retry_backoff: float = 1.0,
+        quarantine_path: str | Path | None = None,
+    ) -> SyncEngine:
+        """Resume where a previous run left off, instead of restarting
+        from scratch. Restores the boundary-id sets too, not just the
+        raw cursor, so the tie-safe dedup logic survives the restart."""
+        engine = cls(
+            source,
+            target,
+            batch_size=batch_size,
+            cursor=checkpoint.cursor,
+            cursor_ids=set(checkpoint.cursor_ids),
+            deleted_cursor_ids=set(checkpoint.deleted_cursor_ids),
+            max_retries=max_retries,
+            retry_backoff=retry_backoff,
+            quarantine_path=quarantine_path,
+        )
+        engine.stats.records_synced = checkpoint.records_synced
+        engine.stats.records_deleted = checkpoint.records_deleted
+        return engine
+
+    def checkpoint(
+        self, migration_id: str, source_spec: str, target_spec: str
+    ) -> MigrationCheckpoint:
+        """Snapshot current progress for `CheckpointStore.save()`."""
+        return MigrationCheckpoint(
+            migration_id=migration_id,
+            source=source_spec,
+            target=target_spec,
+            cursor=self.cursor,
+            cursor_ids=set(self.cursor_ids),
+            deleted_cursor_ids=set(self.deleted_cursor_ids),
+            records_synced=self.stats.records_synced,
+            records_deleted=self.stats.records_deleted,
+        )
 
     def _upsert_with_retry(self, batch: list[VectorRecord]) -> None:
         """Upsert a batch, retrying transient failures with exponential
@@ -181,11 +227,20 @@ class SyncEngine:
 
         return max_seen, len(ids_to_delete)
 
-    def run_until_caught_up(self, poll_interval: float = 5.0, idle_passes: int = 2) -> None:
-        """Poll `run_once` until N consecutive passes sync nothing."""
+    def run_until_caught_up(
+        self,
+        poll_interval: float = 5.0,
+        idle_passes: int = 2,
+        on_batch: Callable[[], None] | None = None,
+    ) -> None:
+        """Poll `run_once` until N consecutive passes sync nothing.
+        `on_batch`, if given, runs after every pass, so a caller can
+        persist a checkpoint mid-run instead of only at the very end."""
         consecutive_idle = 0
         while consecutive_idle < idle_passes:
             synced = self.run_once()
+            if on_batch is not None:
+                on_batch()
             consecutive_idle = consecutive_idle + 1 if synced == 0 else 0
             if consecutive_idle < idle_passes:
                 time.sleep(poll_interval)
