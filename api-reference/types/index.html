@@ -768,6 +768,17 @@
 </li>
       
         <li class="md-nav__item">
+  <a href="#vecparity.types.QueryCase.filter" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        filter
+      
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
   <a href="#vecparity.types.QueryCase.label" class="md-nav__link">
     <span class="md-ellipsis">
       
@@ -1003,7 +1014,11 @@ VectorRecord already in the source collection to search <em>with</em>.</p>
 <span class="normal"><a href="#__codelineno-0-42">42</a></span>
 <span class="normal"><a href="#__codelineno-0-43">43</a></span>
 <span class="normal"><a href="#__codelineno-0-44">44</a></span>
-<span class="normal"><a href="#__codelineno-0-45">45</a></span></pre></div></td><td class="code"><div><pre><span></span><code><a id="__codelineno-0-34" name="__codelineno-0-34"></a><span class="k">class</span><span class="w"> </span><span class="nc">QueryCase</span><span class="p">(</span><span class="n">BaseModel</span><span class="p">):</span>
+<span class="normal"><a href="#__codelineno-0-45">45</a></span>
+<span class="normal"><a href="#__codelineno-0-46">46</a></span>
+<span class="normal"><a href="#__codelineno-0-47">47</a></span>
+<span class="normal"><a href="#__codelineno-0-48">48</a></span>
+<span class="normal"><a href="#__codelineno-0-49">49</a></span></pre></div></td><td class="code"><div><pre><span></span><code><a id="__codelineno-0-34" name="__codelineno-0-34"></a><span class="k">class</span><span class="w"> </span><span class="nc">QueryCase</span><span class="p">(</span><span class="n">BaseModel</span><span class="p">):</span>
 <a id="__codelineno-0-35" name="__codelineno-0-35"></a><span class="w">    </span><span class="sd">"""A single query used for parity verification.</span>
 <a id="__codelineno-0-36" name="__codelineno-0-36"></a>
 <a id="__codelineno-0-37" name="__codelineno-0-37"></a><span class="sd">    Either a query_vector is supplied directly, or query_id references a</span>
@@ -1015,6 +1030,10 @@ VectorRecord already in the source collection to search <em>with</em>.</p>
 <a id="__codelineno-0-43" name="__codelineno-0-43"></a>    <span class="n">top_k</span><span class="p">:</span> <span class="nb">int</span> <span class="o">=</span> <span class="mi">10</span>
 <a id="__codelineno-0-44" name="__codelineno-0-44"></a>    <span class="n">label</span><span class="p">:</span> <span class="nb">str</span> <span class="o">|</span> <span class="kc">None</span> <span class="o">=</span> <span class="kc">None</span>
 <a id="__codelineno-0-45" name="__codelineno-0-45"></a><span class="w">    </span><span class="sd">"""Optional human-readable name, shown in parity reports/CI failures."""</span>
+<a id="__codelineno-0-46" name="__codelineno-0-46"></a>    <span class="nb">filter</span><span class="p">:</span> <span class="nb">dict</span><span class="p">[</span><span class="nb">str</span><span class="p">,</span> <span class="n">Any</span><span class="p">]</span> <span class="o">|</span> <span class="kc">None</span> <span class="o">=</span> <span class="kc">None</span>
+<a id="__codelineno-0-47" name="__codelineno-0-47"></a><span class="w">    </span><span class="sd">"""Optional equality-only metadata filter, replayed against both</span>
+<a id="__codelineno-0-48" name="__codelineno-0-48"></a><span class="sd">    source and target so parity is checked on the same filtered path a</span>
+<a id="__codelineno-0-49" name="__codelineno-0-49"></a><span class="sd">    real query would take, not just plain unfiltered similarity."""</span>
 </code></pre></div></td></tr></table></div>
               </details>
 
@@ -1027,6 +1046,31 @@ VectorRecord already in the source collection to search <em>with</em>.</p>
 
 
 
+
+<div class="doc doc-object doc-attribute">
+
+
+
+<h2 id="vecparity.types.QueryCase.filter" class="doc doc-heading">
+            <code class="highlight language-python"><span class="nb">filter</span> <span class="o">=</span> <span class="kc">None</span></code>
+
+  <span class="doc doc-labels">
+      <small class="doc doc-label doc-label-class-attribute"><code>class-attribute</code></small>
+      <small class="doc doc-label doc-label-instance-attribute"><code>instance-attribute</code></small>
+  </span>
+
+</h2>
+
+
+    <div class="doc doc-contents ">
+
+        <p>Optional equality-only metadata filter, replayed against both
+source and target so parity is checked on the same filtered path a
+real query would take, not just plain unfiltered similarity.</p>
+
+    </div>
+
+</div>
 
 <div class="doc doc-object doc-attribute">
 
